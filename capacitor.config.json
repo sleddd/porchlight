@@ -1,0 +1,6 @@
+{
+  "appId": "com.fastandcurious.mymomentum",
+  "appName": "My Momentum",
+  "webDir": "www",
+  "ios": { "contentInset": "never", "backgroundColor": "#161618" }
+}

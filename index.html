@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>New Tab</title>
 <style>
   :root{
@@ -177,7 +177,8 @@
   .nope svg{fill:none; stroke-linecap:round}
   .nope.on svg{fill:rgba(255,255,255,.35)}
   .menu.nope-menu{min-width:280px; max-width:340px}
-  .menu-blocked{display:flex; flex-wrap:wrap; gap:8px; padding:2px 12px 10px}
+  .menu-blocked{display:flex; flex-wrap:wrap; gap:8px; padding:2px 12px 10px;
+                max-height:116px; overflow-y:auto}   /* long hide lists scroll here */
   .chip{
     display:inline-flex; align-items:center; gap:6px;
     padding:5px 10px; border-radius:999px; cursor:pointer;
@@ -213,6 +214,7 @@
     border-radius:14px; padding:10px;
     box-shadow:0 12px 40px rgba(0,0,0,.5);
     z-index:30; text-align:left;
+    max-height:calc(100vh - 130px); overflow-y:auto;   /* never taller than the window */
   }
   .menu[hidden]{display:none}
   .menu-item{
@@ -231,7 +233,7 @@
   }
   .menu-list{
     display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
-    max-height:330px; overflow-y:auto; padding:2px 12px 8px;
+    max-height:min(330px, 34vh); overflow-y:auto; padding:2px 12px 8px;
   }
   .menu-empty{
     grid-column:1 / -1;
@@ -272,6 +274,15 @@
   }
   .skipquote:hover{opacity:1; text-decoration:underline}
   .spacer{justify-self:end}
+  .toast{
+    position:fixed; left:50%; bottom:90px; transform:translate(-50%, 8px);
+    max-width:520px; padding:11px 18px; border-radius:12px;
+    background:rgba(22,22,24,.86); color:#fff; font-size:14px; text-align:center;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.14); box-shadow:0 12px 40px rgba(0,0,0,.5);
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:40;
+  }
+  .toast.on{opacity:1; transform:translate(-50%, 0)}
   .credit{
     font-size:11.5px; opacity:.9; text-shadow:var(--shadow);
     text-align:right; white-space:nowrap; visibility:hidden;
@@ -499,6 +510,23 @@
     .bottom{grid-template-columns:1fr; gap:16px; text-align:center}
     .place,.quote{justify-self:center}
   }
+
+  /* Phones (and the iPhone/iPad app): clear the notch and home bar, and let
+     the popups use the screen's width instead of overflowing it. */
+  .top{padding-top:max(26px, env(safe-area-inset-top))}
+  .bottom{padding-bottom:max(30px, env(safe-area-inset-bottom))}
+  @media (max-width:560px){
+    .top{padding-left:16px; padding-right:16px}
+    .bottom{padding-left:16px; padding-right:16px}
+    .menu, .sound-panel{
+      position:fixed; left:10px; right:10px; width:auto;
+      min-width:0; max-width:none;
+    }
+    /* a sheet along the bottom; tap outside it to close */
+    .menu{bottom:max(10px, env(safe-area-inset-bottom)); max-height:75vh; background:rgba(22,22,24,.96)}
+    .sound-panel{top:calc(max(26px, env(safe-area-inset-top)) + 50px); max-height:75vh}
+    .sound-grid{grid-template-columns:repeat(4, 1fr)}
+  }
 </style>
 </head>
 <body>
@@ -588,6 +616,7 @@
     </div>
     <div class="quote" id="quote"></div>
     <div class="spacer"><div class="credit" id="credit"></div></div>
+    <div class="toast" id="toast" role="status"></div>
   </footer>
 
 </div>
@@ -645,17 +674,20 @@
     }
     memStore[key] = String(v);
     try{ localStorage.setItem(key, v); }catch(e){}
-    if(lsGet("sp__migrated") === "1"){ markDirty(k); scheduleFlush(); }
+    markDirty(k);       // until it reaches prefs.json, prefs.js can't overwrite it
+    scheduleFlush();
   }
 
-  /* ---------- prefs.json sync (Chrome / Edge) ----------
+  /* ---------- prefs.json sync (every browser) ----------
      Everything store() saves is also written to prefs.json in this folder,
-     so every Chrome/Edge browser connected to that file shares the same
-     favorites, renames, critter setting and photo of the day. localStorage
-     stays as the offline copy. Every browser is treated the same. */
+     so every browser shares the same favorites, renames, critter setting,
+     hidden photos and photo of the day. Browsers can't write files on their
+     own without a file picker, so prefs-server.js (a tiny helper running on
+     this Mac, 127.0.0.1 only) reads and writes prefs.json for the page. No
+     helper running: changes wait in localStorage and go in once it's back. */
   var JSON_KEYS = {favs:1, photo_of_day:1, blocked:1};   // stored as objects in the file
-  var syncHandle = null;                       // FileSystemFileHandle for prefs.json
-  var syncState = "off";                       // off | needs-permission | on
+  var PREFS_URL = "http://127.0.0.1:47321/prefs";       // prefs-server.js
+  var syncState = "off";                       // off | on
   var syncTimer = null, syncBusy = false;
   var refreshCritters = function(){};
 
@@ -678,31 +710,21 @@
     if(d.indexOf(k) === -1){ d.push(k); lsSet("sp__dirty", JSON.stringify(d)); }
   }
 
-  function idb(mode, fn){
-    return new Promise(function(resolve, reject){
-      var req = indexedDB.open("mymomentum", 1);
-      req.onupgradeneeded = function(){ req.result.createObjectStore("kv"); };
-      req.onerror = function(){ reject(req.error); };
-      req.onsuccess = function(){
-        var db = req.result, tx = db.transaction("kv", mode), r = fn(tx.objectStore("kv"));
-        tx.oncomplete = function(){ db.close(); resolve(r && r.result); };
-        tx.onerror = function(){ db.close(); reject(tx.error); };
-      };
-    });
-  }
-
   function readPrefs(){
-    return syncHandle.getFile()
-      .then(function(f){ return f.text(); })
-      .then(function(t){
-        var o = t.trim() ? JSON.parse(t) : {};   // a broken file throws: never overwritten
+    return fetch(PREFS_URL, {cache:"no-store"})
+      .then(function(r){
+        if(!r.ok) throw new Error("prefs-server HTTP " + r.status);   // broken file: never overwritten
+        return r.json();
+      })
+      .then(function(o){
         return (o && typeof o === "object" && !Array.isArray(o)) ? o : {};
       });
   }
   function writePrefs(obj){
-    return syncHandle.createWritable().then(function(w){
-      return w.write(JSON.stringify(obj, null, 2) + "\n").then(function(){ return w.close(); });
-    });
+    // text/plain keeps this a "simple" request (no CORS preflight)
+    return fetch(PREFS_URL, {method:"POST", headers:{"Content-Type":"text/plain"},
+                             body: JSON.stringify(obj)})
+      .then(function(r){ if(!r.ok) throw new Error("prefs-server HTTP " + r.status); });
   }
 
   // Copy the file into memory + localStorage, skipping keys with unsent
@@ -789,8 +811,7 @@
       })
       .catch(function(e){
         keys.forEach(markDirty);
-        syncState = "needs-permission";
-        armAutoConnect();
+        syncState = "off";            // retried when the helper answers again
         if(window.console) console.warn("Couldn't write prefs.json:", e);
       })
       .then(function(){
@@ -807,46 +828,6 @@
     var p = cachedPhoto();
     if(p && (!current || p.url !== current.url)) showPhoto(p);
     else if(current) $("placeName").textContent = labelFor(current);
-  }
-
-  // The browser only allows file access from a click, so when prefs.json
-  // isn't connected the next click anywhere on the page connects it.
-  var autoArmed = false;
-  function armAutoConnect(){
-    if(autoArmed || typeof window.showOpenFilePicker !== "function") return;
-    autoArmed = true;
-    document.addEventListener("click", function autoConnect(){
-      document.removeEventListener("click", autoConnect, true);
-      autoArmed = false;
-      connectSync();
-    }, true);
-  }
-
-  // Runs from a click, so the browser lets it open the picker / ask.
-  function connectSync(){
-    var ready;
-    if(syncHandle && syncState === "needs-permission"){
-      ready = syncHandle.requestPermission({mode:"readwrite"});
-    } else {
-      ready = Promise.resolve().then(function(){ return window.showOpenFilePicker({
-        types:[{description:"Preferences", accept:{"application/json":[".json"]}}]
-      }); }).then(function(hs){
-        syncHandle = hs[0];
-        return syncHandle.requestPermission({mode:"readwrite"});
-      });
-    }
-    ready
-      .then(function(perm){
-        if(perm !== "granted") throw new Error("permission not granted");
-        return idb("readwrite", function(s){ return s.put(syncHandle, "prefsHandle"); });
-      })
-      .then(startSync)
-      .then(refreshFromPrefs)
-      .catch(function(e){
-        if(e && e.name === "AbortError") return;      // closed the picker
-        syncState = syncHandle ? "needs-permission" : "off";
-        if(window.console) console.warn("prefs.json sync failed:", e);
-      });
   }
 
   // Load prefs.json into the page. It arrives as window.PREFS through the
@@ -870,33 +851,36 @@
       });
   }
 
-  // On load: always read prefs.json, then reuse the remembered file for
-  // writing if the browser still allows it.
+  // Connect to the helper: read prefs.json, send it anything changed here.
+  // Never asks the user anything; if the helper isn't running, try later.
+  // In the iPhone/iPad app there's no Mac helper to talk to: everything is
+  // kept on the device (localStorage) instead.
+  var IN_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  function connectSync(){
+    if(IN_APP) return Promise.resolve();
+    return startSync().catch(function(e){
+      syncState = "off";
+      if(window.console) console.warn("prefs.json sync unavailable (is prefs-server.js running?):", e);
+    });
+  }
+
+  // On load: read prefs.js straight away, then the live file via the helper.
   function bootSync(){
-    return loadPrefsJson()
-      .then(function(){ return idb("readonly", function(s){ return s.get("prefsHandle"); }); })
-      .then(function(h){
-        if(!h) return;
-        syncHandle = h;
-        return h.queryPermission({mode:"readwrite"}).then(function(perm){
-          if(perm !== "granted"){ syncState = "needs-permission"; return; }
-          return startSync();
-        });
-      })
-      .catch(function(e){
-        syncState = syncHandle ? "needs-permission" : "off";
-        if(window.console) console.warn("prefs.json sync unavailable:", e);
-      });
+    return loadPrefsJson().then(connectSync);
   }
 
   function initSync(){
-    // Coming back to this tab: pick up changes another browser made.
+    // Coming back to this tab: pick up changes another browser made (and
+    // reconnect if the helper was down before).
     document.addEventListener("visibilitychange", function(){
-      if(document.hidden || syncState !== "on" || syncBusy) return;
-      readPrefs()
-        .then(function(file){ applyFile(file); refreshFromPrefs(); })
-        .catch(function(){ syncState = "needs-permission"; armAutoConnect(); });
+      if(document.hidden || syncBusy) return;
+      (syncState === "on"
+        ? readPrefs().then(function(file){ applyFile(file); })
+        : connectSync()
+      ).then(refreshFromPrefs, function(){ syncState = "off"; });
     });
+    // and keep retrying quietly while it's down
+    setInterval(function(){ if(syncState !== "on" && !document.hidden) connectSync(); }, 60e3);
   }
 
   function timeIn(tz){
@@ -1032,13 +1016,25 @@
         var hopeless = msg.indexOf("rate limit") !== -1 ||
                        msg.indexOf("access key") !== -1 ||
                        msg.indexOf("blocked") !== -1;
-        if(!hopeless && tries < 3){ loadPhoto(true, tries + 1); return; }
+        if(!hopeless && tries < 1){ loadPhoto(true, tries + 1); return; }   // one more topic, then give up: every try is a search
         if(window.console) console.warn("Background unavailable:", msg);
-        // Unsplash said no (hourly limit, offline...): show a favorite instead
-        var favs = favList().filter(function(f){ return !isBlocked({url:f.url}); });
+        // Skipping never lands on a favorite: keep the current photo (or, if
+        // it was just thumbed down, show none) until Unsplash answers again.
+        if(force){
+          toast(skipFailMessage(msg));
+          if(current && isBlocked(current)){
+            current = null;
+            $("bg").classList.remove("on");
+            $("placeName").textContent = "";
+            renderCredit(null);
+          }
+          return;
+        }
+        // Opening a tab and Unsplash said no (hourly limit, offline...): show a favorite instead
+        var favs = favList().filter(function(f){ return !isBlocked({id:f.id, url:f.url}); });
         if(favs.length){
           var f = favs[Math.floor(Math.random() * favs.length)];
-          var fp = {url:f.url, thumb:f.thumb, label:f.place, by:f.by, link:f.link};
+          var fp = {id:f.id, url:f.url, thumb:f.thumb, label:f.place, by:f.by, link:f.link};
           cachePhoto(fp);   // becomes today's photo, so new tabs don't fall back to the old one
           showPhoto(fp);
           return;
@@ -1046,6 +1042,29 @@
         $("placeName").textContent = "";
         renderCredit(null);
       });
+  }
+
+  // A skip that couldn't get a new photo says so instead of doing nothing.
+  var toastTimer = null;
+  function toast(text){
+    var el = $("toast");
+    el.textContent = text;
+    el.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.classList.remove("on"); }, 6000);
+  }
+  function skipFailMessage(msg){
+    if(msg.indexOf("rate limit") !== -1){
+      var until = 0;
+      try{ until = JSON.parse(localStorage.getItem("unsplash_blocked_until") || "0"); }catch(e){}
+      var mins = Math.max(1, Math.ceil((until - Date.now()) / 60e3));
+      return "Unsplash's hourly limit (50 searches) is used up. Skip works again in about " +
+             (until > Date.now() ? mins + " min" : "an hour") + ".";
+    }
+    if(msg.indexOf("access key") !== -1) return "Unsplash rejected the access key in fetch-photos.js.";
+    if(msg.indexOf("every topic is blocked") !== -1) return "Every photo topic is hidden. Unhide some in the settings menu.";
+    if(msg.indexOf("no good photos") !== -1) return "Couldn't find a new photo that passes the filters. Try skip again.";
+    return "Couldn't reach Unsplash for a new photo (" + msg + ").";
   }
 
   function renderCredit(photo){
@@ -1662,6 +1681,7 @@
     if(!found){
       out.push({
         url:   current.url,
+        id:    current.id || "",
         thumb: current.thumb || "",
         place: labelFor(current),
         by:    current.by || "",
@@ -1726,7 +1746,7 @@
       im.loading = "lazy";
       b.appendChild(im);
       b.addEventListener("click", function(){
-        var photo = {url:f.url, thumb:f.thumb, label:f.place, by:f.by, link:f.link};
+        var photo = {id:f.id, url:f.url, thumb:f.thumb, label:f.place, by:f.by, link:f.link};
         cachePhoto(photo);   // a chosen favorite becomes today's photo too
         showPhoto(photo);
         closeMenu();
@@ -1786,12 +1806,12 @@
   function dislike(kind){
     if(!current) return;
     var b = blockedSaved();
-    addBlock(b, "photos", current.id || current.url);
+    addBlock(b, "photos", current.url || current.id);   // the url matches every copy of this photo
     if(kind === "topics") addBlock(b, "topics", current.topic);
     if(kind === "labels") addBlock(b, "labels", current.label);
     blockSave(b);
-    var url = current.url, l = favList();
-    var out = l.filter(function(f){ return f.url !== url; });
+    var l = favList();
+    var out = l.filter(function(f){ return !isBlocked({id:f.id, url:f.url}); });
     if(out.length !== l.length) favSave(out);
     closeNope();
     loadPhoto(true);
@@ -2275,6 +2295,24 @@
     { id:"clapping", label:"Clapping",
       icon:'<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 5 14.5V11a1.5 1.5 0 0 1 2-1.4"/>',
       file:"sounds/clapping.m4a" },
+    { id:"bbirds", label:"3D birds",
+      icon:'<path d="M3 12c3-1 5 0 7 2 1-4 4-7 9-7-1 5-4 9-9 10-3 .5-6-1-7-5z"/><path d="M15.5 9.5h.01"/>',
+      file:"sounds/binaural-birds.m4a" },
+    { id:"brain", label:"3D rain",
+      icon:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M8 16.5l-1 2.5M12 16.5l-1 2.5M16 16.5l-1 2.5"/>',
+      file:"sounds/binaural-rain.m4a" },
+    { id:"bbeach", label:"3D beach",
+      icon:'<path d="M3 12a9 9 0 0 1 18 0H3z"/><path d="M12 12l2.5 8"/><path d="M3 20h18"/>',
+      file:"sounds/binaural-beach.m4a" },
+    { id:"forest", label:"Quiet forest",
+      icon:'<path d="M8 3l-4 7h2.5L3 16h10l-3.5-6H12z"/><path d="M8 16v5"/><path d="M16 6l-3 5h2l-2.5 4.5h7L17 11h2z"/><path d="M16 15.5V21"/>',
+      file:"sounds/forest.m4a" },
+    { id:"river", label:"River",
+      icon:'<path d="M3 8c3-2 6 2 9 0s6-2 9 0"/><path d="M3 13c3-2 6 2 9 0s6-2 9 0"/><path d="M3 18c3-2 6 2 9 0s6-2 9 0"/>',
+      file:"sounds/river.m4a" },
+    { id:"clapping2", label:"Clapping II",
+      icon:'<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 5 14.5V11a1.5 1.5 0 0 1 2-1.4"/>',
+      file:"sounds/clapping2.m4a" },
 
     // ---- spa music (your recordings from sounds/customsounds; these start
     // from the top instead of a random spot)
@@ -2307,7 +2345,16 @@
       file:"sounds/ambient.m4a" },
     { id:"jazz", label:"Jazz", group:"music",
       icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz.m4a" }
+      file:"sounds/jazz.m4a" },
+    { id:"theta", label:"Theta", group:"music",
+      icon:'<path d="M2 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/>',
+      file:"sounds/theta.m4a" },
+    { id:"lakemarie", label:"Lake Marie", group:"music",
+      icon:'<path d="M3 17c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"/><path d="M5 13l4-6 3 4 2-2 5 4"/>',
+      file:"sounds/lakemarie.m4a" },
+    { id:"porchlight", label:"Porch light", group:"music",
+      icon:'<path d="M9 3h6l1 4H8z"/><path d="M8 7h8l-1.5 7h-5z"/><path d="M12 14v3M9.5 20h5"/>',
+      file:"sounds/porchlight.m4a" }
   ];
 
   // Recordings loop through two <audio> elements that cross-fade at the
@@ -2508,7 +2555,6 @@
   bootSync().then(function(){
     if(started) refreshFromPrefs();   // file arrived after the timeout
     else startPrefs();
-    if(syncState !== "on") armAutoConnect();
   });
   setTimeout(startPrefs, 1000);
   initCritter("octavian", "hop", 700);

@@ -18,29 +18,21 @@ var UNSPLASH_ACCESS_KEY = "";
 var TOPICS = [
   // ---------- year-round: landscapes ----------
   { q: "mountain landscape",                   label: "nature" },
-  { q: "mountain peaks sunset",                label: "nature" },
-  { q: "sunrise over mountains",               label: "nature" },
   { q: "alpine lake",                          label: "nature" },
   { q: "mountain lake reflection",             label: "nature" },
   { q: "mountain valley view",                 label: "nature" },
-  { q: "dolomites landscape",                  label: "nature" },
   { q: "swiss alps landscape",                 label: "nature" },
   { q: "patagonia mountains",                  label: "nature" },
   { q: "norway fjord",                         label: "nature" },
   { q: "lofoten islands",                      label: "nature" },
   { q: "new zealand landscape",                label: "nature" },
-  { q: "banff lake",                           label: "nature" },
   { q: "yosemite valley",                      label: "nature" },
   { q: "scottish highlands landscape",         label: "nature" },
-  { q: "alaska mountains",                     label: "nature" },
   { q: "glacier lake mountains",               label: "nature" },
   { q: "iceland landscape",                    label: "nature" },
-  { q: "iceland waterfall",                    label: "nature" },
   { q: "waterfall mountain landscape",         label: "nature" },
   { q: "green valley mountains",               label: "nature" },
   { q: "rolling green hills",                  label: "nature" },
-  { q: "big sur coast",                        label: "nature" },
-  { q: "cliffs ocean coastline",               label: "nature" },
   { q: "blue sky mountain landscape",          label: "nature" },
 
   // broad "wallpaper" searches: let Unsplash surface its best scenery
@@ -52,9 +44,6 @@ var TOPICS = [
   { q: "scenic view nature",                   label: "nature" },
   { q: "nature photography landscape",         label: "nature" },
   { q: "epic landscape",                       label: "nature" },
-  { q: "golden hour landscape",                label: "nature" },
-  { q: "sunset landscape",                     label: "nature" },
-  { q: "dramatic sky landscape",               label: "nature" },
   { q: "national park landscape",              label: "nature" },
 
   // more kinds of scenery
@@ -65,26 +54,17 @@ var TOPICS = [
   { q: "pine forest mountains",                label: "nature" },
   { q: "meadow landscape",                     label: "nature" },
   { q: "countryside landscape",                label: "nature" },
-  { q: "hills sunrise",                        label: "nature" },
-  { q: "coastal landscape",                    label: "nature" },
-  { q: "sea cliffs sunset",                    label: "nature" },
   { q: "island landscape",                     label: "nature" },
   { q: "volcano landscape",                    label: "nature" },
   { q: "glacier landscape",                    label: "nature" },
   { q: "waterfall landscape",                  label: "nature" },
-  { q: "clouds over mountains",                label: "nature" },
 
   // more places
-  { q: "canadian rockies",                     label: "nature" },
   { q: "grand teton",                          label: "nature" },
-  { q: "glacier national park",                label: "nature" },
   { q: "pacific northwest landscape",          label: "nature" },
-  { q: "faroe islands",                        label: "nature" },
   { q: "lake district landscape",              label: "nature" },
   { q: "isle of skye",                         label: "nature" },
-  { q: "ireland coast",                        label: "nature" },
   { q: "tuscany hills",                        label: "nature" },
-  { q: "lake como",                            label: "nature" },
   { q: "austria alps lake",                    label: "nature" },
   { q: "madeira landscape",                    label: "nature" },
   { q: "azores landscape",                     label: "nature" },
@@ -101,21 +81,16 @@ var TOPICS = [
   { q: "seychelles beach",                     label: "paradise" },
   { q: "phi phi islands",                      label: "paradise" },
   { q: "el nido palawan",                      label: "paradise" },
-  { q: "tropical coast cliffs",                label: "paradise" },
-  { q: "palm trees sunset beach",              label: "paradise" },
+  { q: "palm trees beach",                     label: "paradise" },
   { q: "tropical waterfall jungle",            label: "paradise" },
   { q: "bali rice terraces",                   label: "paradise" },
 
   // ---------- year-round: hawaii ----------
-  { q: "na pali coast",                        label: "hawaii" },
   { q: "kauai landscape",                      label: "hawaii" },
-  { q: "maui coastline",                       label: "hawaii" },
   { q: "oahu mountains",                       label: "hawaii" },
   { q: "hawaii coast mountains",               label: "hawaii" },
   { q: "road to hana",                         label: "hawaii" },
   { q: "hawaii waterfall",                     label: "hawaii" },
-  { q: "hawaii sunset ocean",                  label: "hawaii" },
-  { q: "big island hawaii coast",              label: "hawaii" },
 
   // ---------- autumn (Sep - Nov) ----------
   { q: "autumn mountain landscape",            label: "autumn", season: "autumn" },
@@ -128,11 +103,10 @@ var TOPICS = [
   { q: "autumn river valley",                  label: "autumn", season: "autumn" },
   { q: "autumn waterfall",                     label: "autumn", season: "autumn" },
   { q: "autumn hills landscape",               label: "autumn", season: "autumn" },
-  { q: "dolomites autumn",                     label: "autumn", season: "autumn" },
 
   // ---------- winter (Dec - Feb) ----------
   { q: "snowy mountain landscape",             label: "winter", season: "winter" },
-  { q: "snow covered mountains sunrise",       label: "winter", season: "winter" },
+  { q: "snow covered mountains",               label: "winter", season: "winter" },
   { q: "frozen lake mountains",                label: "winter", season: "winter" },
   { q: "winter mountain valley",               label: "winter", season: "winter" },
   { q: "lapland winter landscape",             label: "winter", season: "winter" },
@@ -144,7 +118,7 @@ var TOPICS = [
 
   // ---------- summer (Jun - Aug) ----------
   { q: "alpine meadow summer",                 label: "summer", season: "summer" },
-  { q: "lavender field sunset",                label: "summer", season: "summer" },
+  { q: "lavender field",                       label: "summer", season: "summer" },
   { q: "summer lake mountains",                label: "summer", season: "summer" }
 ];
 
@@ -205,9 +179,32 @@ function topicBlocked(t, bl) {
   return bl.topics.indexOf(t.q) !== -1 || bl.labels.indexOf(t.label) !== -1 ||
          !!(bl.wordRe && bl.wordRe.test(t.q));
 }
+/* Every name a photo goes by: its Unsplash id, its url, and the image's
+   "photo-123-abc" part of the url (the same photo found by another search
+   gets a different url, but that part never changes). */
+function photoKeys(photo) {
+  var keys = [];
+  if (photo.id) keys.push(photo.id);
+  if (photo.url) {
+    keys.push(photo.url);
+    var m = String(photo.url).match(/\/(photo-[\w-]+)/);
+    if (m) keys.push(m[1]);
+  }
+  return keys;
+}
+/* Favorites (saved by the page in localStorage "sp_favs") never come up as a
+   new photo: you open those from the menu. */
+function isFavorite(photo) {
+  var favs = readJSON("sp_favs", []), keys = photoKeys(photo);
+  return Array.isArray(favs) && favs.some(function (f) {
+    return f && photoKeys(f).some(function (k) { return keys.indexOf(k) !== -1; });
+  });
+}
 function isBlocked(photo, bl) {
   bl = bl || blockList();
-  return bl.photos.indexOf(photo.id || photo.url) !== -1 ||
+  var blocked = [];
+  bl.photos.forEach(function (p) { blocked = blocked.concat(photoKeys({ id: p, url: p })); });
+  return photoKeys(photo).some(function (k) { return blocked.indexOf(k) !== -1; }) ||
          (photo.topic && bl.topics.indexOf(photo.topic) !== -1) ||
          (photo.label && bl.labels.indexOf(photo.label) !== -1) ||
          !!(bl.wordRe && bl.wordRe.test((photo.desc || "") + " " + (photo.topic || "")));
@@ -242,10 +239,10 @@ var NOT_SCENERY = new RegExp("\\b(" + [
    - LANDSCAPE: the description must name something you'd see in a vista.
    - AERIAL / CLOSE: shot from above, or too close to be a view.
    - SHORELINE + DEPTH: beach and ocean shots need something with height. */
-var LANDSCAPE = /\b(mountains?|hills?|hillside|valley|lakes?|river|cliffs?|sky|horizon|islands?|bay|fjord|waterfalls?|falls|peaks?|meadow|fields?|landscape|scenery|scenic|view|vista|glacier|volcano|sunset|sunrise|clouds?|coast|coastline|lagoon|terraces?)\b/i;
+var LANDSCAPE = /\b(mountains?|hills?|hillside|valley|lakes?|river|sky|horizon|islands?|bay|fjord|waterfalls?|falls|peaks?|meadow|fields?|landscape|scenery|scenic|view|vista|glacier|volcano|lagoon|terraces?)\b/i;
 var AERIAL_OR_CLOSE = /\b(aerial|drone|bird'?s eye|top view|from above|overhead|close up|closeup|macro|trunks?|bark|bokeh|shallow focus)\b/i;
 var SHORELINE = /\b(beach|beaches|shore|seashore|seaside|shoreline|sand|ocean|sea|waves?)\b/i;
-var HAS_HEIGHT = /\b(mountains?|hills?|cliffs?|islands?|rocks?|rocky|boulders?|palms?|palm trees?|peaks?|volcano|headland)\b/i;
+var HAS_HEIGHT = /\b(mountains?|hills?|islands?|rocks?|rocky|boulders?|palms?|palm trees?|peaks?|volcano|headland)\b/i;
 function isLandscape(desc) {
   if (!LANDSCAPE.test(desc) || AERIAL_OR_CLOSE.test(desc)) return false;
   if (SHORELINE.test(desc) && !HAS_HEIGHT.test(desc)) return false;
@@ -255,17 +252,21 @@ function isLandscape(desc) {
 /* Palm trees are fine as part of a beach or island scene, but not on their
    own (e.g. "green coconut trees under blue sky"). */
 var PALMS = /\b(palms?|palm trees?|coconut( trees?)?)\b/i;
-var SCENE = /\b(beach|beaches|sea|seashore|seaside|shore|shoreline|coast|coastline|ocean|water|lagoon|island|bay|cove|sand|mountains?|hills?|valley|waterfall|lake|river|sunset|sunrise|horizon)\b/i;
+var SCENE = /\b(beach|beaches|sea|seashore|seaside|shore|shoreline|coast|coastline|ocean|water|lagoon|island|bay|cove|sand|mountains?|hills?|valley|waterfall|lake|river|horizon)\b/i;
 function onlyPalms(desc) { return PALMS.test(desc) && !SCENE.test(desc); }
 
-/* Well-exposed, colourful photos only: no dark, foggy, washed-out,
+/* Well-exposed, colourful photos only: no clouds, dark, foggy, washed-out,
    overexposed or moody shots.
    Each result carries a "blurhash" (a tiny blurred preview); its first
    colour is the photo's true average colour. Gloomy shots are dark or
    nearly colourless; good desktop photos are bright AND colourful.
    Tuned on real results: fog forests and grey storm mountains score under
    0.12 saturation, sunny valleys and beaches 0.18+. */
-var GLOOMY = /\b(fog|fogs|foggy|mist|misty|haze|hazy|moody|dark|darkness|gloomy|overcast|storm|stormy|night|infrared|overexposed|high key|faded)\b/i;
+var GLOOMY = /\b(cloudy|fog|fogs|foggy|mist|misty|haze|hazy|moody|dark|darkness|gloomy|overcast|storm|stormy|night|infrared|overexposed|high key|faded)\b/i;
+/* Photos OF clouds (the description leads with them, or they're the whole
+   scene). A landscape that just has a few clouds in its sky is fine:
+   rejecting every "cloud" emptied most searches. */
+var CLOUD_PHOTO = /^\W*([\w-]+\s+){0,2}clouds?\b|\b(cloudscape|cumulus|cumulonimbus|sea of clouds|above the clouds|in the clouds|clouds over|cloud formations?|cloudy sky|sky full of clouds)\b/i;
 var MIN_BRIGHTNESS = 0.45;   // 0 = black, 1 = white
 var MAX_BRIGHTNESS = 0.82;   // above this reads as blown-out / overexposed
 var MIN_COLOUR     = 0.15;   // 0 = grey, 1 = fully saturated
@@ -318,11 +319,11 @@ function bestPhotos(results) {
     var ratio = p.width / p.height, desc = describe(p);
     return editorPicked(p) && p.width >= 3000 &&
            ratio >= 1.3 && ratio <= 2.4 && brightEnough(p) &&
-           !NOT_SCENERY.test(desc) && !GLOOMY.test(desc) && !onlyPalms(desc) &&
+           !NOT_SCENERY.test(desc) && !GLOOMY.test(desc) && !CLOUD_PHOTO.test(desc) && !onlyPalms(desc) &&
            isLandscape(desc);
   });
   best.sort(function (a, b) { return b.likes - a.likes; });
-  return best.slice(0, 10);   // empty -> the page tries another topic
+  return best.slice(0, 20);   // empty -> the page tries another topic
 }
 
 /* Turn an Unsplash result into what the page shows. */
@@ -356,12 +357,13 @@ function toPhoto(p, topic) {
   };
 }
 
-/* Spare good photos from earlier searches. Each search yields up to 10
+/* Spare good photos from earlier searches. Each search yields up to 20
    keepers but only one is shown; the rest wait here, so most skips cost no
-   request against Unsplash's 50-per-hour limit. Photos are served only once
-   the stock spans 3+ topics (so you don't get ten alpine lakes in a row),
-   and expire after 3 days to keep things fresh. */
-var POOL_KEY = "photo_pool", POOL_DAYS = 3, POOL_MAX = 60;
+   request against Unsplash's 50-per-hour limit. Normally photos are served
+   only once the stock spans 3+ topics (so you don't get ten alpine lakes in
+   a row); when a search fails (hourly limit, nothing passed the filters)
+   any spare photo is used instead. They expire after 7 days. */
+var POOL_KEY = "photo_pool", POOL_DAYS = 7, POOL_MAX = 200;
 
 /* No repeats: every photo shown is remembered (last 500) and never picked
    again, from a search or from the pool. */
@@ -380,20 +382,30 @@ function markSeen(photo) {
 }
 function isSeen(photo, seen) { return seen.indexOf(photo.id || photo.url) !== -1; }
 
-/* Same search, different photos: the first search of a topic reads page 1
-   and notes how many pages it has; later searches pick a random page among
-   the first five, so a topic doesn't keep landing on the same few shots. */
-var PAGES_KEY = "topic_pages";
+/* Same search, new photos: each topic remembers which page of Unsplash's
+   results it has reached and moves on one page per search (1, 2, 3 …), so
+   it never re-reads the same top 30. After MAX_PAGES (or the last page) it
+   starts again at 1; by then the photos it showed are in the seen list. */
+var PAGES_KEY = "topic_pages", MAX_PAGES = 15;
 
 /* After a 403 (hourly limit), leave Unsplash alone for a while. */
 var BLOCKED_KEY = "unsplash_blocked_until", BLOCK_MINUTES = 20;
-function pageFor(topic) {
+function topicPages(topic) {
   var known = readJSON(PAGES_KEY, {})[topic.q];
-  return known ? 1 + Math.floor(Math.random() * Math.min(known, 5)) : 1;
+  // Saved by the old version as just the page count: it only ever read
+  // pages 1-5, so carry on from page 6.
+  if (typeof known === "number") known = { total: known, next: 6 };
+  return known || { total: 0, next: 1 };
 }
-function rememberPages(topic, total) {
+function pageFor(topic) {
+  var t = topicPages(topic), last = Math.min(t.total || MAX_PAGES, MAX_PAGES);
+  return t.next > last ? 1 : t.next;
+}
+/* Note the page just read and how many there are; the next search reads
+   the one after it. */
+function rememberPages(topic, page, total) {
   var pages = readJSON(PAGES_KEY, {});
-  pages[topic.q] = total || 1;
+  pages[topic.q] = { total: total || 1, next: page + 1 };
   writeJSON(PAGES_KEY, pages);
 }
 
@@ -408,13 +420,13 @@ function writePool(pool) {
   try { localStorage.setItem(POOL_KEY, JSON.stringify(pool.slice(-POOL_MAX))); } catch (e) {}
 }
 var lastTopic = null;
-function fromPool() {
+function fromPool(anyTopic) {
   var seen = seenIds();
   var bl = blockList();
-  var pool = readPool().filter(function (x) { return !isSeen(x.photo, seen) && !isBlocked(x.photo, bl); }), topics = {};
+  var pool = readPool().filter(function (x) { return !isSeen(x.photo, seen) && !isBlocked(x.photo, bl) && !isFavorite(x.photo); }), topics = {};
   pool.forEach(function (x) { topics[x.photo.topic] = true; });
-  if (Object.keys(topics).length < 3) return null;
-  var choices = pool.filter(function (x) { return x.photo.topic !== lastTopic; });
+  if (!anyTopic && Object.keys(topics).length < 3) return null;
+  var choices = anyTopic ? pool : pool.filter(function (x) { return x.photo.topic !== lastTopic; });
   if (!choices.length) return null;
   var pick = choices[Math.floor(Math.random() * choices.length)];
   writePool(pool.filter(function (x) { return x !== pick; }));
@@ -453,15 +465,25 @@ function getRandomPhoto() {
     });
   }
 
-  // One request per search. 30 results (the most Unsplash allows) gives the
-  // quality filters enough to choose from.
-  return search(pageFor(topic))
-  .then(function (data) {
-    if (data && data.total_pages) rememberPages(topic, data.total_pages);
-    var seen = seenIds(), bl = blockList();
-    var photos = bestPhotos((data && data.results) || [])
-      .map(function (p) { return toPhoto(p, topic); })
-      .filter(function (ph) { return ph && !isSeen(ph, seen) && !isBlocked(ph, bl); });
+  // Read the topic's next page: 30 results (the most Unsplash allows) gives
+  // the quality filters enough to choose from. If nothing new passes, read
+  // one more page before giving up, so a run of already-seen photos doesn't
+  // end the search.
+  function keepers(page) {
+    return search(page).then(function (data) {
+      rememberPages(topic, page, data && data.total_pages);
+      var seen = seenIds(), bl = blockList();
+      return bestPhotos((data && data.results) || [])
+        .map(function (p) { return toPhoto(p, topic); })
+        .filter(function (ph) { return ph && !isSeen(ph, seen) && !isBlocked(ph, bl) && !isFavorite(ph); });
+    });
+  }
+
+  return keepers(pageFor(topic))
+  .then(function (photos) {
+    return photos.length ? photos : keepers(pageFor(topic));
+  })
+  .then(function (photos) {
     if (!photos.length) throw new Error('no good photos for "' + topic.q + '"');
 
     var i = Math.floor(Math.random() * photos.length);
@@ -476,5 +498,13 @@ function getRandomPhoto() {
     lastTopic = topic.q;
     markSeen(shown);
     return shown;
+  })
+  .catch(function (err) {
+    // Search failed: a spare photo beats no photo, whatever its topic.
+    var spare = fromPool(true);
+    if (!spare) throw err;
+    lastTopic = spare.topic;
+    markSeen(spare);
+    return spare;
   });
 }
