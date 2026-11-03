@@ -1,0 +1,16 @@
+{
+  "name": "mymomentum",
+  "private": true,
+  "description": "My Momentum start screen, also packaged as an iPhone/iPad app",
+  "scripts": {
+    "build": "node build-app.js",
+    "ios": "node build-app.js && npx cap sync ios && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0"
+  }
+}

@@ -46,3 +46,14 @@ windowrain.m4a   <- customsounds/rain-on-window.mp3
 bowls.m4a        <- customsounds/gentle-singing-bowls.mp3
 tibetan.m4a      <- customsounds/tibetan-bowls.mp3
 chimes.m4a       <- customsounds/gentle-wind-chime.wav
+binaural-birds.m4a <- custom-sounds/binaural-birds.wav  (the "3D birds" tile)
+binaural-rain.m4a  <- custom-sounds/binaural-rain.wav   (the "3D rain" tile)
+binaural-beach.m4a <- custom-sounds/binural-beach.wav   (the "3D beach" tile)
+forest.m4a         <- custom-sounds/quiet-forest.flac    (the "Quiet forest" tile)
+river.m4a          <- custom-sounds/river-flowing.wav
+clapping2.m4a      <- custom-sounds/clapping-two.wav    (the "Clapping II" tile)
+theta.m4a          <- custom-sounds/theta-wave.flac     (first 6 minutes of the hour)
+lakemarie.m4a      <- custom-sounds/lake-marie-i-ian-aisling-main-version-27028-01-02.mp3
+                      "Lake Marie I" by Ian Aisling
+porchlight.m4a     <- custom-sounds/leave-the-porch-light-on-cory-alstad-main-version-37050-02-25.mp3
+                      "Leave the Porch Light On" by Cory Alstad

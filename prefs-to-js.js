@@ -5,8 +5,8 @@
  * load a .js file through a <script> tag. index.html loads prefs.js, so every
  * browser (Safari included) gets the same favorites and settings.
  *
- * Runs automatically whenever prefs.json changes (macOS LaunchAgent
- * com.mymomentum.prefs). By hand:  node prefs-to-js.js
+ * prefs-server.js does this on every save from the page; run it by hand
+ * after editing prefs.json yourself:  node prefs-to-js.js
  */
 
 var fs = require("node:fs");

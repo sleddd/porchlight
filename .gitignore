@@ -1,1 +1,9 @@
 .env
+# iPhone/iPad app build output
+node_modules/
+www/
+ios/App/App/public/
+
+# licensed music, kept local only
+sounds/lakemarie.m4a
+sounds/porchlight.m4a
