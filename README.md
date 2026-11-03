@@ -15,6 +15,10 @@ A new-tab page starter screen like momentum, but customized for me: a big clock 
 
 ![Sound mixer](screenshots/sound-mixer.png)
 
+### Music not included
+
+Two music tiles, **Lake Marie** ("Lake Marie I" by Ian Aisling) and **Porch light** ("Leave the Porch Light On" by Cory Alstad), are from [Uppbeat](https://uppbeat.io/) and aren't in this repo, so they stay silent until you add your own. To use them or add other music, download tracks from [uppbeat.io](https://uppbeat.io/) and save them as `sounds/lakemarie.m4a` and `sounds/porchlight.m4a` (or add new tiles in `index.html`).
+
 ## Running it
 
 No build. Open `index.html` in a browser, or set it as your new-tab / home page.
