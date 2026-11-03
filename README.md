@@ -7,7 +7,7 @@ A new-tab page starter screen like momentum, but customized for me: a big clock 
 ## What's on it
 
 - **Clock** in the middle, with world clocks and weather along the top
-- **Background photos** from Unsplash, picked from the topics in `fetch-photos.js` (seasonal topics show up in their season)
+- **Background photos** from Unsplash, one random photo per request from the collection in `fetch-photos.js`
 - **Favorites and thumbs down**: heart a photo to keep it, thumbs-down one to never see it again
 - **Quotes** at the bottom, with *next quote* to skip
 - **Search** (press `/`) and an optional critter
@@ -23,27 +23,7 @@ Two music tiles, **Lake Marie** ("Lake Marie I" by Ian Aisling) and **Porch ligh
 
 No build. Open `index.html` in a browser, or set it as your new-tab / home page.
 
-To save favorites, hidden photos and settings to `prefs.json` (shared by every browser), keep the small helper `prefs-server.js` running. Start it at login once with:
-
-```sh
-cat > ~/Library/LaunchAgents/com.mymomentum.prefs.plist <<'EOF2'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>Label</key><string>com.mymomentum.prefs</string>
-  <key>ProgramArguments</key><array>
-    <string>/opt/homebrew/bin/node</string>
-    <string>/Users/fastandcurious/Documents/mymomentum/prefs-server.js</string>
-  </array>
-  <key>RunAtLoad</key><true/>
-  <key>KeepAlive</key><true/>
-  <key>StandardErrorPath</key><string>/tmp/com.mymomentum.prefs.log</string>
-</dict></plist>
-EOF2
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mymomentum.prefs.plist
-```
-
-Without it the page still works; changes stay in that browser and are saved to `prefs.json` as soon as the helper is running.
+Favorites, hidden photos and settings are saved in the browser. `prefs.js` fills in starting favorites and settings the first time a browser opens the page.
 
 ## iPhone / iPad app
 
@@ -61,16 +41,15 @@ To install on your phone or iPad:
 
 With a free Apple ID the app stops opening after 7 days; plug in and press Run again to renew it. Run `npm run ios` again whenever you change the page or add sounds.
 
-In the app, favorites, hidden photos and settings are kept on that device (the `prefs.json` helper only runs on the Mac).
+In the app, favorites, hidden photos and settings are kept on that device.
 
 ## Files
 
 | File | What it does |
 | --- | --- |
 | `index.html` | The page itself |
-| `fetch-photos.js` | Unsplash key and the list of photo topics; edit it to change what you see |
-| `prefs.json` | Favorites, blocked photos and settings |
-| `prefs-server.js` | Helper that saves `prefs.json` for the page (and refreshes `prefs.js`), no file picker |
+| `fetch-photos.js` | Unsplash key and the Unsplash collection photos come from (`COLLECTION`); edit it to change what you see |
+| `prefs.json` | Starting favorites, blocked photos and settings |
 | `prefs-to-js.js` | Copies `prefs.json` into `prefs.js` by hand, after editing `prefs.json` yourself: `node prefs-to-js.js` |
 | `build-app.js`, `capacitor.config.json`, `ios/` | The iPhone/iPad app: `npm run ios` builds and opens it in Xcode |
 | `sounds/` | Nature sound loops; credits in `sounds/CREDITS.txt` |
