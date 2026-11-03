@@ -1,4 +1,4 @@
-/* Generated from prefs.json by prefs-server.js. Don't edit; edit prefs.json. */
+/* Generated from prefs.json by prefs-to-js.js. Don't edit; edit prefs.json. */
 window.PREFS = {
   "favs": [
     {
