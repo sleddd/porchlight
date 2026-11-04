@@ -1,4 +1,4 @@
-# Porchlight
+<img width="2560" height="1280" alt="GitHub banner · social preview 1280×640@2x" src="https://github.com/user-attachments/assets/68c97ae8-5684-4d59-af89-5da6348c8805" />
 
 A light left on for you, every time you open a new tab.
 
