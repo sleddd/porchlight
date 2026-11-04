@@ -4,7 +4,7 @@ A personal start screen and a calm corner in one. Open a new tab and you get a b
 
 It runs in any browser as a new tab page, and as an iPhone/iPad app with every sound stored on the device so it works offline.
 
-![mymomentum new tab](screenshots/new-tab.jpg)
+![Porchlight new tab](screenshots/new-tab.jpg)
 
 With the world clocks and the quote folded away:
 
