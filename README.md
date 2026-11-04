@@ -6,12 +6,10 @@
 Porchlight greets you with a beautiful background behind your main clock, adjustable world clocks, weather, and a daily quote. When you need a quieter moment, tap the headphones and the screen opens into a full sound mixer. No timer, just focus. Layer rain, birdsong, moving water and spa music, set each one to the level you like, or let tracks play back to back as a playlist.
 
 It runs in any browser as your new tab page, and as an iPhone/iPad app that keeps every sound on the device, so the light stays on even offline.
+![Minimal view with clocks and quote folded](screenshots/minimal.jpg)
 
 ![Porchlight new tab](screenshots/new-tab.jpg)
 
-With the world clocks and the quote folded away:
-
-![Minimal view with clocks and quote folded](screenshots/minimal.jpg)
 
 ## What's on it
 
