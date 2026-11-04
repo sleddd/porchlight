@@ -14,8 +14,6 @@ var api = "https://api.unsplash.com/photos/random"
     + "?collections=" + COLLECTION
     + "&orientation=landscape"
     + "&content_filter=high"       
-    + "&w=1920" 
-    + "&q=85" 
     + "&auto=format";
 
   console.log("fetching photo from Unsplash: " + api);

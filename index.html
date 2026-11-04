@@ -77,19 +77,42 @@
     content:""; width:4px; height:4px; border-radius:50%;
     background:currentColor; margin-top:-1px;
   }
+  /* Open, the sound panel grows from beside the headphones to fill the whole
+     screen: frosted glass over the photo, with an X to close. */
   .sound-panel{
-    position:absolute; top:calc(100% + 14px); left:0; width:420px;
-    max-height:calc(100vh - 90px); overflow-y:auto;
-    background:rgba(22,22,24,.86);
-    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    border:1px solid rgba(255,255,255,.14);
-    border-radius:14px; padding:10px;
-    box-shadow:0 12px 40px rgba(0,0,0,.5);
-    z-index:30; text-align:left;
+    position:fixed; inset:0; z-index:50; text-align:left;
+    display:flex; flex-direction:column;
+    padding:max(22px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right))
+            max(20px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
+    background:rgba(16,16,18,.38);
+    backdrop-filter:blur(34px) saturate(150%); -webkit-backdrop-filter:blur(34px) saturate(150%);
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+    animation:soundOpen .38s cubic-bezier(.2,.8,.2,1);
   }
   .sound-panel[hidden]{display:none}
+  .sound-panel.closing{animation:soundClose .24s cubic-bezier(.4,0,.8,.4) forwards}
+  @keyframes soundOpen{
+    from{clip-path:inset(60px calc(100% - 444px) calc(100% - 360px) 24px round 14px); opacity:.4}
+    to  {clip-path:inset(0 0 0 0 round 0); opacity:1}
+  }
+  @keyframes soundClose{
+    from{clip-path:inset(0 0 0 0 round 0); opacity:1}
+    to  {clip-path:inset(60px calc(100% - 444px) calc(100% - 360px) 24px round 14px); opacity:0}
+  }
+  .sound-top{display:flex; align-items:center; gap:12px; padding:2px 4px 14px 12px; flex-shrink:0}
+  .sound-title{font-size:15px; letter-spacing:.3px; opacity:.95}
+  .sound-close{
+    margin-left:auto; width:40px; height:40px; border-radius:50%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:#fff;
+    -webkit-tap-highlight-color:transparent; transition:background .2s;
+  }
+  .sound-close:hover{background:rgba(255,255,255,.22)}
+  .sound-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round}
+  .sound-body{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden}
+  @media (prefers-reduced-motion:reduce){ .sound-panel, .sound-panel.closing{animation:none} }
   .sound-grid{
-    display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px;
     padding:0 2px 4px;
   }
   .sound{
@@ -97,13 +120,84 @@
     padding:14px 4px 11px; border:1px solid transparent; border-radius:10px;
     background:none; color:#fff; font:inherit; font-size:12px; letter-spacing:.2px;
     cursor:pointer; opacity:.55; transition:opacity .18s, background .18s, border-color .18s;
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation;
   }
-  .sound:hover{opacity:.9; background:rgba(255,255,255,.07)}
-  .sound.on{opacity:1; background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.2)}
+  /* mouse only: on touch screens :hover sticks after a tap, so a tile you
+     just turned off would still look shaded */
+  @media (hover:hover){
+    .sound:hover{opacity:.9; background:rgba(255,255,255,.07)}
+  }
+  .sound.on, .sound.on:hover{opacity:1; background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.2)}
+  .sound-foot{
+    flex-shrink:0; margin-top:10px; padding:4px 10px 6px;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:14px;
+  }
+  .sound-mix{max-height:32vh; overflow-y:auto; padding-top:8px;
+             display:grid; grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); column-gap:32px}
+  .sound-vol{max-width:600px}
+  @media (pointer:coarse){ .mix-row{padding-top:10px; padding-bottom:10px} }   /* finger-sized */
+  .sound-err{padding:10px 12px 0; font-size:12px; color:#ffb4a8; user-select:text; -webkit-user-select:text}
+  .sound-err[hidden]{display:none}
   .sound svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.5;
              stroke-linecap:round;stroke-linejoin:round}
   .sound-subhead{padding-top:14px}
-  .sound-mix{padding:8px 0 0}
+  /* pages of tiles: arrows + dots in each section heading, swipe on touch */
+  .section-head{display:flex; align-items:center; gap:12px}
+  .section-head .pager{margin-left:auto}
+  .music-head .pager{margin-left:4px}
+  .pager{display:inline-flex; align-items:center; gap:2px; text-transform:none; letter-spacing:0}
+  .pager[hidden]{display:none}
+  .pager .pg{
+    width:28px; height:28px; border-radius:50%; border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.08); color:#fff; -webkit-tap-highlight-color:transparent;
+  }
+  .pager .pg:disabled{opacity:.3; cursor:default}
+  .pager .pg svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;
+                 stroke-linecap:round; stroke-linejoin:round}
+  .pager .dots{display:flex}
+  .pager .dot{width:18px; height:22px; padding:0; border:none; background:none; cursor:pointer;
+              -webkit-tap-highlight-color:transparent}
+  .pager .dot::before{content:""; display:block; width:7px; height:7px; margin:auto; border-radius:50%;
+                      background:rgba(255,255,255,.3); transition:background .2s}
+  .pager .dot.cur::before{background:#fff}
+  .pager .dot.has-on::before{box-shadow:0 0 0 2px rgba(255,255,255,.55)}   /* something on that page is playing */
+  .sound.off-page{display:none}
+  .sound-grid.from-right{animation:pgFromRight .28s ease}
+  .sound-grid.from-left{animation:pgFromLeft .28s ease}
+  @keyframes pgFromRight{from{opacity:0; transform:translateX(28px)} to{opacity:1; transform:none}}
+  @keyframes pgFromLeft {from{opacity:0; transform:translateX(-28px)} to{opacity:1; transform:none}}
+  @media (prefers-reduced-motion:reduce){ .sound-grid.from-right, .sound-grid.from-left{animation:none} }
+
+  /* spa music playlist */
+  .music-head{display:flex; align-items:center; gap:12px}
+  .pl-mode{
+    display:inline-flex; align-items:center; gap:6px; margin-left:auto;
+    padding:5px 11px; border-radius:999px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.2); background:none; color:#fff;
+    font:inherit; font-size:11px; letter-spacing:.6px; text-transform:uppercase; opacity:.75;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .pl-mode svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round}
+  .pl-mode[aria-pressed="true"]{opacity:1; background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.35)}
+  .pl-bar{display:flex; align-items:center; gap:8px; margin:0 2px 10px; padding:8px 10px;
+          border-radius:10px; background:rgba(255,255,255,.06)}
+  .pl-bar[hidden]{display:none}
+  .pl-btn{width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
+          display:flex; align-items:center; justify-content:center;
+          background:rgba(255,255,255,.12); color:#fff; -webkit-tap-highlight-color:transparent}
+  .pl-btn:disabled{opacity:.35; cursor:default}
+  .pl-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8;
+              stroke-linecap:round; stroke-linejoin:round}
+  .pl-btn svg .fill{fill:currentColor}
+  .pl-now{flex:1; min-width:0; font-size:12.5px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pl-clear{background:none; border:none; color:#fff; font:inherit; font-size:12px; opacity:.6; cursor:pointer; padding:6px}
+  .pl-clear:hover{opacity:1}
+  .sound{position:relative}
+  .pl-num{position:absolute; top:6px; right:8px; min-width:18px; height:18px; padding:0 5px;
+          border-radius:9px; background:#fff; color:#161618; font-style:normal;
+          font-size:11px; font-weight:600; line-height:18px; text-align:center}
+  .sound.queued{opacity:.9; border-color:rgba(255,255,255,.14)}
   .sound-mix[hidden]{display:none}
   .mix-row{
     display:flex; align-items:center; gap:10px; padding:5px 12px;
@@ -111,14 +205,40 @@
   }
   .mix-row svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;
                stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.9}
-  .mix-name{width:62px; flex-shrink:0; opacity:.9}
+  .mix-name{width:92px; flex-shrink:0; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .mix-row input{flex:1; min-width:0; accent-color:#fff; cursor:pointer}
   .sound-vol{padding:8px 12px 6px}
 
   .clocks{
     display:flex; align-items:flex-start; gap:30px;
     flex-wrap:wrap; justify-content:flex-end;
+    transition:opacity .25s ease, transform .25s ease;
   }
+  /* the clocks fold away to a small "Clocks" pill (remembered) */
+  .clocks-wrap{display:flex; align-items:flex-start; gap:16px; justify-content:flex-end; min-width:0}
+  .clocks-wrap.hiding .clocks{opacity:0; transform:translateX(16px)}
+  .clocks-wrap.collapsed .clocks{display:none}
+  .clocks-toggle{
+    display:inline-flex; align-items:center; gap:7px; flex-shrink:0;
+    margin-top:4px; padding:6px 8px; border-radius:999px; cursor:pointer;
+    border:1px solid transparent; background:none; color:#fff;
+    font:inherit; font-size:11px; letter-spacing:.7px; text-transform:uppercase;
+    opacity:.6; transition:opacity .2s, background .25s, border-color .25s, padding .25s;
+    text-shadow:var(--shadow); -webkit-tap-highlight-color:transparent;
+  }
+  .clocks-toggle:hover{opacity:1}
+  .clocks-toggle svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8;
+                     stroke-linecap:round; stroke-linejoin:round; flex-shrink:0}
+  .clocks-toggle > svg:first-child, .clocks-toggle span{display:none}
+  .clocks-toggle .chev{transform:rotate(180deg); transition:transform .3s ease}
+  .clocks-wrap.collapsed .clocks-toggle{
+    opacity:.9; padding:7px 13px; text-shadow:none;
+    background:rgba(20,20,22,.28); border-color:rgba(255,255,255,.16);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  }
+  .clocks-wrap.collapsed .clocks-toggle > svg:first-child,
+  .clocks-wrap.collapsed .clocks-toggle span{display:inline}
+  .clocks-wrap.collapsed .clocks-toggle .chev{transform:none}
   .clock{display:flex; flex-direction:column; align-items:center; gap:2px}
   .clock .t{
     display:flex; align-items:baseline; gap:0;
@@ -133,9 +253,15 @@
 
   /* ---------- center clock ---------- */
   .mid{flex:1; display:flex; align-items:center; justify-content:center; padding-bottom:40px}
+  /* big clock hidden with the clock button in the toolbar (remembered) */
+  body.no-big-clock .big{opacity:0; transform:scale(.96); pointer-events:none}
+  #bigClockBtn .slash{display:none}
+  body.no-big-clock #bigClockBtn .slash{display:inline}
+  body.no-big-clock #bigClockBtn{opacity:.6}
   .big{
     font-size:clamp(90px,13.5vw,190px);
-    font-weight:600; letter-spacing:-4px; line-height:1;
+    font-weight:100; letter-spacing:-4px; line-height:1; opacity:.7;
+    transition:opacity .4s ease, transform .4s ease;
     text-shadow:0 4px 44px rgba(0,0,0,.4);
     font-variant-numeric:tabular-nums;
   }
@@ -143,7 +269,7 @@
   /* ---------- bottom ---------- */
   .bottom{
     display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,600px) minmax(0,1fr);   /* equal sides keep the quote centred */
+    grid-template-columns:minmax(0,1fr) auto;   /* photo controls left, quote card right */
     align-items:end; gap:24px;
     padding:0 34px 30px;
   }
@@ -247,18 +373,44 @@
     display:block;
   }
   .menu-fav:hover{transform:scale(1.06); outline-color:rgba(255,255,255,.75)}
+  /* the quote: a small frosted card in the bottom-right corner that folds
+     down to a "Quote" pill */
   .quote{
-    font-size:16.5px; font-style:italic; text-align:center;
-    max-width:600px; line-height:1.45;
-    justify-self:center;
-    text-shadow:0 1px 3px rgba(0,0,0,.55), 0 2px 18px rgba(0,0,0,.45);
+    justify-self:end; align-self:end; width:360px; max-width:100%;
+    background:rgba(20,20,22,.28);
+    backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border:1px solid rgba(255,255,255,.16); border-radius:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.25);
+    text-align:left; overflow:hidden;
+    transition:width .3s ease, border-radius .3s ease;
   }
+  .quote.collapsed{width:118px; border-radius:999px}
+  .quote-toggle{
+    display:flex; align-items:center; gap:8px; width:100%;
+    padding:9px 14px; background:none; border:none; color:#fff;
+    font:inherit; font-size:11px; letter-spacing:.7px; text-transform:uppercase;
+    cursor:pointer; opacity:.85; white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .quote-toggle:hover{opacity:1}
+  .quote-toggle svg{width:14px; height:14px; stroke:currentColor; fill:none;
+                    stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0}
+  .quote-toggle .chev{margin-left:auto; transition:transform .3s ease}
+  .quote.collapsed .chev{transform:rotate(180deg)}
+  .quote-body{display:grid; grid-template-rows:1fr; transition:grid-template-rows .3s ease, opacity .25s ease}
+  .quote.collapsed .quote-body{grid-template-rows:0fr; opacity:0}
+  .quote-inner{
+    overflow:hidden; min-width:0; width:360px; max-width:100%;
+    font-size:14.5px; font-style:italic; line-height:1.45;
+    text-shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  .quote-inner > div{padding:0 16px 13px}
   .quote .who{
-    font-style:normal; opacity:.9; font-size:13.5px;
-    display:block; margin-top:5px;
+    font-style:normal; opacity:.85; font-size:12.5px;
+    display:block; margin-top:6px;
   }
   .skipquote{
-    display:block; margin:6px auto 0;
+    display:block; margin:6px 0 0;
     background:none; border:none; padding:0;
     color:inherit; font:inherit;
     font-style:italic; font-size:12px;
@@ -266,7 +418,6 @@
     text-shadow:var(--shadow); white-space:nowrap;
   }
   .skipquote:hover{opacity:1; text-decoration:underline}
-  .spacer{justify-self:end}
   .toast{
     position:fixed; left:50%; bottom:90px; transform:translate(-50%, 8px);
     max-width:520px; padding:11px 18px; border-radius:12px;
@@ -495,13 +646,14 @@
   body.no-critters .gerald{transition:transform .5s cubic-bezier(.5,0,.75,0) .08s}
 
   @media (max-width:1100px){ .octavian,.gerald{display:none} }
+  /* iPad-landscape widths: keep the clocks on one row beside the toolbar */
+  @media (min-width:1101px) and (max-width:1300px){ .clocks{gap:18px} .clocks-wrap{gap:10px} }
 
   @media (max-width:1100px){
     .top{flex-direction:column; align-items:center; gap:20px}
     .clocks{justify-content:center; gap:22px}
+    .clocks-wrap{justify-content:center}
     .clock .t{font-size:21px}
-    .bottom{grid-template-columns:1fr; gap:16px; text-align:center}
-    .place,.quote{justify-self:center}
   }
 
   /* Phones (and the iPhone/iPad app): clear the notch and home bar, and let
@@ -510,14 +662,16 @@
   .bottom{padding-bottom:max(30px, env(safe-area-inset-bottom))}
   @media (max-width:560px){
     .top{padding-left:16px; padding-right:16px}
-    .bottom{padding-left:16px; padding-right:16px}
-    .menu, .sound-panel{
+    .bottom{padding-left:16px; padding-right:16px; grid-template-columns:1fr; gap:14px}
+    .place{justify-self:center}
+    .quote{justify-self:center}
+    .menu{
       position:fixed; left:10px; right:10px; width:auto;
       min-width:0; max-width:none;
     }
     /* a sheet along the bottom; tap outside it to close */
     .menu{bottom:max(10px, env(safe-area-inset-bottom)); max-height:75vh; background:rgba(22,22,24,.96)}
-    .sound-panel{top:calc(max(26px, env(safe-area-inset-top)) + 50px); max-height:75vh}
+    .sound-panel{padding-left:12px; padding-right:12px}
     .sound-grid{grid-template-columns:repeat(4, 1fr)}
   }
 </style>
@@ -533,6 +687,10 @@
     <div class="tools">
       <button class="tool" id="searchBtn" title="Search (press /)">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+
+      <button class="tool" id="bigClockBtn" type="button" title="Hide the big clock" aria-pressed="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path class="slash" d="M4 4l16 16"/></svg>
       </button>
 
       <button class="tool critter-toggle" id="critterBtn" title="Show critters" aria-pressed="true">
@@ -551,23 +709,61 @@
             <path d="M20 15h-2.5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1z"/>
           </svg>
         </button>
-        <div class="sound-panel" id="soundPanel" hidden>
-          <div class="menu-head">Nature sounds</div>
+        <div class="sound-panel" id="soundPanel" hidden role="dialog" aria-label="Sounds">
+          <div class="sound-top">
+            <span class="sound-title">Sounds</span>
+            <button class="sound-close" id="soundClose" type="button" title="Close (Esc)" aria-label="Close">
+              <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div class="sound-body" id="soundBody">
+          <div class="menu-head section-head">
+            <span>Nature sounds</span>
+            <div class="pager" id="pgNature" hidden></div>
+          </div>
           <div class="sound-grid" id="soundGrid"></div>
-          <div class="menu-head sound-subhead">Spa music</div>
+          <div class="menu-head sound-subhead music-head">
+            <span>Spa music</span>
+            <button class="pl-mode" id="plMode" type="button" aria-pressed="false"
+                    title="Play spa music one track after another instead of together">
+              <svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h7M4 6h.01M4 12h.01M4 18h.01"/></svg>
+              <span>Playlist</span>
+            </button>
+            <div class="pager" id="pgMusic" hidden></div>
+          </div>
+          <div class="pl-bar" id="plBar" hidden>
+            <button class="pl-btn" id="plPlay" type="button" title="Play"></button>
+            <button class="pl-btn" id="plNext" type="button" title="Next track">
+              <svg viewBox="0 0 24 24"><path class="fill" d="M5 5l10 7-10 7z"/><path d="M19 5v14"/></svg>
+            </button>
+            <span class="pl-now" id="plNow"></span>
+            <button class="pl-clear" id="plClear" type="button">Clear</button>
+          </div>
           <div class="sound-grid" id="musicGrid"></div>
-          <div class="sound-mix" id="soundMix" hidden></div>
-          <div class="menu-sep"></div>
-          <div class="sound-vol mix-row" title="Volume for all sounds">
-            <svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/><path d="M19 6.5a7.5 7.5 0 0 1 0 11"/></svg>
-            <span class="mix-name">All</span>
-            <input type="range" id="soundVol" min="0" max="100" aria-label="Volume">
+          </div>
+          <!-- pinned to the bottom of the panel so the sliders stay in view -->
+          <div class="sound-foot">
+            <div class="sound-err" id="soundErr" hidden></div>
+            <div class="sound-mix" id="soundMix" hidden></div>
+            <div class="menu-sep"></div>
+            <div class="sound-vol mix-row" title="Volume for all sounds">
+              <svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/><path d="M19 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+              <span class="mix-name">All</span>
+              <input type="range" id="soundVol" min="0" max="100" aria-label="Volume">
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="clocks" id="clocks"></div>
+    <div class="clocks-wrap" id="clocksWrap">
+      <div class="clocks" id="clocks"></div>
+      <button class="clocks-toggle" id="clocksToggle" type="button" aria-expanded="true" title="Hide the clocks">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+        <span>Clocks</span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+    </div>
   </header>
 
   <main class="mid"><div class="big" id="big">--:--</div></main>
@@ -604,8 +800,14 @@
         <svg viewBox="0 0 24 24"><path d="M17 3v11"/><path d="M9 18.1L10 14H4.9a2 2 0 0 1-1.9-2.5l2.3-7A2 2 0 0 1 7.2 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2.8a2 2 0 0 0-1.8 1.1l-3.5 6.9A3 3 0 0 1 9 18.1z"/></svg>
       </button>
     </div>
-    <div class="quote" id="quote"></div>
-    <div class="spacer"></div>
+    <div class="quote" id="quote">
+      <button class="quote-toggle" id="quoteToggle" type="button" aria-expanded="true" title="Hide the quote">
+        <svg viewBox="0 0 24 24"><path d="M4 11h5v6H4zM4 11c0-3 1.5-5 4-6M14 11h5v6h-5zM14 11c0-3 1.5-5 4-6"/></svg>
+        <span>Quote</span>
+        <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="quote-body"><div class="quote-inner"><div id="quoteText"></div></div></div>
+    </div>
     <div class="toast" id="toast" role="status"></div>
   </footer>
 
@@ -1387,6 +1589,67 @@
     setQuote();
   }
 
+  // show/hide the big clock; remembered between visits
+  function initBigClockToggle(){
+    var btn = $("bigClockBtn");
+    function apply(hidden){
+      document.body.classList.toggle("no-big-clock", hidden);
+      btn.setAttribute("aria-pressed", hidden ? "false" : "true");
+      btn.title = hidden ? "Show the big clock" : "Hide the big clock";
+    }
+    // on load, take the saved state without the fade
+    var big = $("big");
+    big.style.transition = "none";
+    apply(store("big_clock_hidden") === "1");
+    void big.offsetWidth;
+    big.style.transition = "";
+    btn.addEventListener("click", function(){
+      var hide = !document.body.classList.contains("no-big-clock");
+      apply(hide);
+      store("big_clock_hidden", hide ? "1" : "0");
+    });
+  }
+
+  // fold the world clocks away to a pill and back; remembered between visits
+  function initClocksToggle(){
+    var wrap = $("clocksWrap"), btn = $("clocksToggle"), t = null;
+    function label(collapsed){
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      btn.title = collapsed ? "Show the clocks" : "Hide the clocks";
+    }
+    if(store("clocks_collapsed") === "1"){ wrap.classList.add("collapsed", "hiding"); label(true); }
+    btn.addEventListener("click", function(){
+      clearTimeout(t);
+      var collapse = !wrap.classList.contains("collapsed") && !wrap.classList.contains("hiding");
+      store("clocks_collapsed", collapse ? "1" : "0");
+      label(collapse);
+      if(collapse){
+        wrap.classList.add("hiding");                      // fade out, then fold away
+        t = setTimeout(function(){ wrap.classList.add("collapsed"); }, 250);
+      } else {
+        wrap.classList.remove("collapsed");                // back in place, then fade in
+        void wrap.offsetWidth;
+        wrap.classList.remove("hiding");
+      }
+    });
+  }
+
+  // fold the quote card down to a pill and back; remembered between visits
+  function initQuoteToggle(){
+    var box = $("quote"), btn = $("quoteToggle");
+    function apply(collapsed){
+      box.classList.toggle("collapsed", collapsed);
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      btn.title = collapsed ? "Show the quote" : "Hide the quote";
+    }
+    apply(store("quote_collapsed") === "1");
+    btn.addEventListener("click", function(){
+      var c = !box.classList.contains("collapsed");
+      apply(c);
+      store("quote_collapsed", c ? "1" : "0");
+    });
+  }
+
   function setQuote(){
     if(typeof QUOTES === "undefined" || !QUOTES.length) return;
 
@@ -1395,7 +1658,7 @@
     var text = cut === -1 ? raw : raw.slice(0, cut);
     var who  = cut === -1 ? ""  : raw.slice(cut + 3);
 
-    var el = $("quote");
+    var el = $("quoteText");
     el.innerHTML = "";
 
     var textSpan = document.createElement("span");
@@ -1743,8 +2006,38 @@
     if(audio.state !== "running") audio.resume();
     return audio;
   }
+  /* iPhone/iPad: WebKit plays Web Audio on its own as "ambient" sound, which
+     the silent switch mutes (the app's own audio setting doesn't reach it).
+     A looping silent recording alongside switches it to media playback, so
+     the synthesized sounds play like the recordings do. */
+  var keepAlive = null;
+  function silentWav(){
+    var n = 4000, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    function str(o, s){ for(var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+    str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVEfmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 16000, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, "data"); v.setUint32(40, n * 2, true);
+    return URL.createObjectURL(new Blob([buf], {type:"audio/wav"}));
+  }
+  function holdMediaSession(on){
+    if(on){
+      if(!keepAlive){
+        keepAlive = new Audio(silentWav());
+        keepAlive.loop = true;
+        keepAlive.setAttribute("playsinline", "");
+      }
+      if(keepAlive.paused){ var pr = keepAlive.play(); if(pr && pr.catch) pr.catch(function(){}); }
+    } else if(keepAlive && !keepAlive.paused){
+      keepAlive.pause();
+    }
+  }
+
   function wakeAudio(){
-    if(audio && audio.state !== "running" && Object.keys(mixes).length) audio.resume();
+    if(!Object.keys(mixes).length) return;
+    holdMediaSession(true);   // a call or Siri can pause it
+    if(audio && audio.state !== "running") audio.resume();
   }
   document.addEventListener("visibilitychange", function(){ if(!document.hidden) wakeAudio(); });
   ["touchend", "click"].forEach(function(ev){ document.addEventListener(ev, wakeAudio, true); });
@@ -1831,40 +2124,9 @@
     { id:"thunder", label:"Thunder",
       icon:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M12.5 14l-2 3.5h3l-2 3.5"/>',
       file:"sounds/thunder.m4a" },
-    { id:"waves", label:"Waves",
-      icon:'<path d="M2 8c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M2 13c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M2 18c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/>',
-      build:function(a){
-        var lp = filt("lowpass", 400), g = amp(.15), lp2 = filt("lowpass", 2500), g2 = amp(0);
-        chain(a.keep(noiseSrc("brown")), lp, g, a.out);
-        chain(a.keep(noiseSrc("pink")), lp2, g2, a.out);
-        // one wave: swell, break (brighter hiss), wash back out
-        a.every(0, 0, function(){
-          var t = audio.currentTime, up = 2 + Math.random() * 1.5, down = 3 + Math.random() * 2.5;
-          var peak = .55 + Math.random() * .4;
-          g.gain.setValueAtTime(.15, t);
-          g.gain.linearRampToValueAtTime(peak, t + up);
-          g.gain.linearRampToValueAtTime(.15, t + up + down);
-          lp.frequency.setValueAtTime(400, t);
-          lp.frequency.linearRampToValueAtTime(1500, t + up);
-          lp.frequency.linearRampToValueAtTime(400, t + up + down);
-          g2.gain.setValueAtTime(0, t + up * .7);
-          g2.gain.linearRampToValueAtTime(peak * .3, t + up + .2);
-          g2.gain.linearRampToValueAtTime(0, t + up + down);
-          return (up + down) * 1000 + Math.random() * 1500;
-        }, 0);
-      }},
     { id:"wind", label:"Wind",
       icon:'<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h6"/>',
-      build:function(a){
-        var bp = filt("bandpass", 500, .9), g = amp(.4);
-        chain(a.keep(noiseSrc("pink")), bp, g, a.out);
-        chain(a.keep(noiseSrc("brown")), filt("lowpass", 300), amp(.3), a.out);
-        a.every(1500, 4000, function(){
-          var t = audio.currentTime;
-          bp.frequency.setTargetAtTime(250 + Math.random() * 900, t, 1.2);
-          g.gain.setTargetAtTime(.2 + Math.random() * .8, t, 1.5);
-        }, 0);
-      }},
+      file:"sounds/wind2.m4a" },
     { id:"breeze", label:"Breeze",
       icon:'<path d="M5 19c0-8 5-14 15-14 0 9-6 14-13 14"/><path d="M5 19c3-4 6-7 10-9"/>',
       file:"sounds/wind.m4a" },
@@ -1879,27 +2141,7 @@
       file:"sounds/birds.m4a" },
     { id:"crickets", label:"Crickets",
       icon:'<path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6 6 0 0 0 9.5 9.5z"/><path d="M17 3.5v2M16 4.5h2"/>',
-      build:function(a){
-        chain(a.keep(noiseSrc("brown")), filt("lowpass", 250), amp(.15), a.out);
-        for(var c = 0; c < 3; c++){
-          (function(){
-            var o = a.keep(audio.createOscillator()), g = amp(0);
-            o.frequency.value = 4200 + Math.random() * 700;
-            chain(o, g, panTo(a.out));
-            o.start();
-            var gap = 450 + Math.random() * 450;
-            a.every(gap, gap + 150, function(){
-              var t = audio.currentTime + .01, pulses = 3 + Math.floor(Math.random() * 2);
-              for(var i = 0; i < pulses; i++){
-                var st = t + i * .03;
-                g.gain.setValueAtTime(0, st);
-                g.gain.linearRampToValueAtTime(.035, st + .006);
-                g.gain.linearRampToValueAtTime(0, st + .02);
-              }
-            }, Math.random() * 600);
-          })();
-        }
-      }},
+      file:"sounds/crickets.m4a" },
     { id:"gulls", label:"Seagulls",
       icon:'<path d="M2 10c2.7-2.7 7-2.7 10 0 3-2.7 7.3-2.7 10 0"/><path d="M8 16.5c1.4-1.4 3.6-1.4 5 0 1.4-1.4 3.6-1.4 5 0"/>',
       file:"sounds/gulls.m4a" },
@@ -1914,102 +2156,13 @@
       file:"sounds/train.m4a" },
     { id:"heartbeat", label:"Heartbeat",
       icon:'<path d="M2 12h4.5l2-5 3.5 10 2.5-5H22"/>',
-      build:function(a){
-        var lp = filt("lowpass", 180);
-        chain(lp, a.out);
-        function thump(t, f, vol){
-          var o = audio.createOscillator(), g = amp(0);
-          o.frequency.setValueAtTime(f, t);
-          o.frequency.exponentialRampToValueAtTime(f * .6, t + .15);
-          chain(o, g, lp);
-          g.gain.setValueAtTime(0, t);
-          g.gain.linearRampToValueAtTime(vol, t + .015);
-          g.gain.exponentialRampToValueAtTime(.0001, t + .22);
-          o.start(t); o.stop(t + .25);
-        }
-        // lub-dub, around 60 bpm
-        a.every(0, 0, function(){
-          var t = audio.currentTime + .02;
-          thump(t, 62, 1);
-          thump(t + .28, 75, .6);
-          burst(lp, "brown", "lowpass", 200, null, .5, .005, .12);
-          return 60000 / (58 + Math.random() * 5);
-        }, 0);
-      }},
-    { id:"warp", label:"Warp",
-      icon:'<path d="M3 7h8M2 12h11M4 17h7"/><circle cx="18" cy="12" r="3"/>',
-      build:function(a){
-        // deep engine throb: two detuned saws beating through a resonant filter
-        var lp = filt("lowpass", 160, 4);
-        var o1 = a.keep(audio.createOscillator()), o2 = a.keep(audio.createOscillator());
-        o1.type = o2.type = "sawtooth";
-        o1.frequency.value = 41; o2.frequency.value = 41.6;
-        o1.connect(lp); o2.connect(lp);
-        chain(lp, amp(.18), a.out);
-        o1.start(); o2.start();
-        a.keep(lfo(.18, 70, lp.frequency));
-        chain(a.keep(noiseSrc("brown")), filt("lowpass", 140), amp(.6), a.out);
-        // faint airy whine riding on top
-        var hiss = filt("bandpass", 1100, 2.5);
-        chain(a.keep(noiseSrc("pink")), hiss, amp(.08), a.out);
-        a.keep(lfo(.07, 400, hiss.frequency));
-      }},
+      file:"sounds/heartbeat.m4a" },
     { id:"space", label:"Space",
       icon:'<circle cx="12" cy="12" r="5"/><path d="M4.5 15.5c-2 2-2.3 3.7-1.3 4.3 1.8 1 7.4-1.8 11.8-6.2s7.2-10 6.2-11.8c-.6-1-2.3-.7-4.3 1.3"/>',
-      build:function(a){
-        // slow drifting drone chord
-        var bus = filt("lowpass", 1200);
-        chain(bus, a.out);
-        [55, 82.4, 110, 164.8, 220].forEach(function(f, i){
-          var o = a.keep(audio.createOscillator()), g = amp(i < 2 ? .09 : .05);
-          o.frequency.value = f * (1 + (Math.random() - .5) * .004);
-          chain(o, g, bus);
-          o.start();
-          a.keep(lfo(.03 + Math.random() * .05, .04, g.gain));
-        });
-        // solar wind
-        var bp = filt("bandpass", 500, 1.5);
-        chain(a.keep(noiseSrc("pink")), bp, amp(.06), a.out);
-        a.keep(lfo(.02, 300, bp.frequency));
-        // distant shimmering pings with echo
-        var dly = audio.createDelay(2), fb = amp(.45);
-        dly.delayTime.value = .45;
-        chain(dly, fb, dly);
-        chain(dly, amp(.5), a.out);
-        a.every(3000, 9000, function(){
-          var t = audio.currentTime + .02, o = audio.createOscillator(), g = amp(0);
-          o.frequency.value = [440, 523.3, 659.3, 784, 880][Math.floor(Math.random() * 5)];
-          chain(o, g, panTo(a.out));
-          g.connect(dly);
-          g.gain.setValueAtTime(0, t);
-          g.gain.linearRampToValueAtTime(.05, t + .05);
-          g.gain.exponentialRampToValueAtTime(.0001, t + 4);
-          o.start(t); o.stop(t + 4.1);
-        }, 1500);
-      }},
+      file:"sounds/space.m4a" },
     { id:"frost", label:"Frost",
       icon:'<path d="M12 2v20M3.4 7l17.2 10M3.4 17L20.6 7"/><path d="M9.5 4L12 6.5 14.5 4M9.5 20L12 17.5 14.5 20"/>',
-      build:function(a){
-        // thin whistling winter wind
-        var bp = filt("bandpass", 1600, 9), g = amp(1.5);
-        chain(a.keep(noiseSrc("white")), bp, g, a.out);
-        a.every(1500, 3500, function(){
-          var t = audio.currentTime;
-          bp.frequency.setTargetAtTime(1100 + Math.random() * 1400, t, 1.5);
-          g.gain.setTargetAtTime(.6 + Math.random() * 1.4, t, 1.2);
-        }, 0);
-        chain(a.keep(noiseSrc("pink")), filt("highpass", 2500), amp(.05), a.out);
-        // ice crystals
-        a.every(300, 2200, function(){
-          var t = audio.currentTime + .02, o = audio.createOscillator(), gg = amp(0), d = .3 + Math.random() * .5;
-          o.frequency.value = 2500 + Math.random() * 3500;
-          chain(o, gg, panTo(a.out));
-          gg.gain.setValueAtTime(0, t);
-          gg.gain.linearRampToValueAtTime(.02 + Math.random() * .03, t + .003);
-          gg.gain.exponentialRampToValueAtTime(.0001, t + d);
-          o.start(t); o.stop(t + d + .05);
-        }, 500);
-      }},
+      file:"sounds/frost.m4a" },
     { id:"campfire", label:"Campfire",
       icon:'<path d="M12 15.5c-2 0-3.5-1.4-3.5-3.3 0-2 1.6-3 1.9-5.2 1.1.7 1.7 1.7 1.8 2.7.6-.5.9-1.1 1-1.8 1.1 1 1.8 2.3 1.8 4.1 0 1.9-1.4 3.5-3 3.5z"/><path d="M5 20.5l14-3M5 17.5l14 3"/>',
       file:"sounds/campfire.m4a" },
@@ -2046,15 +2199,93 @@
     { id:"piano", label:"Piano", group:"music",
       icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
       file:"sounds/piano.m4a" },
+    { id:"piano2", label:"Piano II", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano2.m4a" },
+    { id:"piano3", label:"Piano III", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano3.m4a" },
+    { id:"piano4", label:"Piano IV", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano4.m4a" },
+    { id:"piano5", label:"Piano V", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano5.m4a" },
+    { id:"piano6", label:"Piano VI", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano6.m4a" },
+    { id:"piano7", label:"Piano VII", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano7.m4a" },
+    { id:"piano8", label:"Piano VIII", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano8.m4a" },
+    { id:"piano9", label:"Piano IX", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano9.m4a" },
+    { id:"piano10", label:"Piano X", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano10.m4a" },
+    { id:"piano11", label:"Piano XI", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano11.m4a" },
+    { id:"piano12", label:"Piano XII", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano12.m4a" },
+    { id:"piano13", label:"Piano XIII", group:"music",
+      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+      file:"sounds/piano13.m4a" },
     { id:"flute", label:"Flute", group:"music",
       icon:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
       file:"sounds/flute.m4a" },
+    { id:"flute2", label:"Flute II", group:"music",
+      icon:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
+      file:"sounds/flute2.m4a" },
+    { id:"flute3", label:"Flute III", group:"music",
+      icon:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
+      file:"sounds/flute3.m4a" },
+    { id:"guitar1", label:"Guitar", group:"music",
+      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
+      file:"sounds/guitar1.m4a" },
+    { id:"guitar2", label:"Guitar II", group:"music",
+      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
+      file:"sounds/guitar2.m4a" },
+    { id:"guitar4", label:"Guitar IV", group:"music",
+      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
+      file:"sounds/guitar4.m4a" },
+    { id:"acoustic", label:"Acoustic", group:"music",
+      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
+      file:"sounds/acoustic.m4a" },
     { id:"handpan", label:"Handpan", group:"music",
       icon:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
       file:"sounds/handpan.m4a" },
+    { id:"handpan2", label:"Handpan II", group:"music",
+      icon:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
+      file:"sounds/handpan2.m4a" },
+    { id:"handpan4", label:"Handpan IV", group:"music",
+      icon:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
+      file:"sounds/handpan4.m4a" },
+    { id:"jazz", label:"Jazz", group:"music",
+      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+      file:"sounds/jazz.m4a" },
+    { id:"jazz2", label:"Jazz II", group:"music",
+      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+      file:"sounds/jazz2.m4a" },
+    { id:"jazz4", label:"Jazz IV", group:"music",
+      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+      file:"sounds/jazz4.m4a" },
+    { id:"jazz5", label:"Jazz V", group:"music",
+      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+      file:"sounds/jazz5.m4a" },
+    { id:"jazz6", label:"Jazz VI", group:"music",
+      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+      file:"sounds/jazz6.m4a" },
     { id:"bowls", label:"Bowls", group:"music",
       icon:'<path d="M4 10h16a8 8 0 0 1-16 0z"/><path d="M9.5 20.5h5"/><path d="M10 6.5c.8-1 .8-2 0-3M14 6.5c.8-1 .8-2 0-3"/>',
       file:"sounds/bowls.m4a" },
+    { id:"singingbowls", label:"Singing bowls", group:"music",
+      icon:'<path d="M4 10h16a8 8 0 0 1-16 0z"/><path d="M9.5 20.5h5"/><path d="M10 6.5c.8-1 .8-2 0-3M14 6.5c.8-1 .8-2 0-3"/>',
+      file:"sounds/singingbowls.m4a" },
     { id:"tibetan", label:"Tibetan", group:"music",
       icon:'<path d="M4 12h16a8 8 0 0 1-16 0z"/><path d="M9.5 22h5"/><path d="M15 9l5-6"/>',
       file:"sounds/tibetan.m4a" },
@@ -2064,18 +2295,36 @@
     { id:"spa2", label:"Spa II", group:"music",
       icon:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
       file:"sounds/spa2.m4a" },
+    { id:"spa3", label:"Spa III", group:"music",
+      icon:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
+      file:"sounds/spa3.m4a" },
+    { id:"spa7", label:"Spa VII", group:"music",
+      icon:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
+      file:"sounds/spa7.m4a" },
     { id:"tranquility", label:"Tranquility", group:"music",
       icon:'<ellipse cx="12" cy="18" rx="7" ry="2.5"/><ellipse cx="12" cy="12.5" rx="5" ry="2"/><ellipse cx="12" cy="7.5" rx="3" ry="1.6"/>',
       file:"sounds/tranquility.m4a" },
     { id:"ambient", label:"Ambient", group:"music",
       icon:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M6.3 17.7l2.5-2.5M15.2 8.8l2.5-2.5"/>',
       file:"sounds/ambient.m4a" },
-    { id:"jazz", label:"Jazz", group:"music",
-      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz.m4a" },
     { id:"theta", label:"Theta", group:"music",
       icon:'<path d="M2 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/>',
       file:"sounds/theta.m4a" },
+    { id:"dreamy", label:"Dreamy", group:"music",
+      icon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3v3M15.5 4.5h3"/>',
+      file:"sounds/dreamy.m4a" },
+    { id:"magic", label:"Magic", group:"music",
+      icon:'<path d="M11 3l1.8 4.7 4.7 1.8-4.7 1.8L11 16l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18.5 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+      file:"sounds/magic.m4a" },
+    { id:"snowfall", label:"Snowfall", group:"music",
+      icon:'<path d="M12 2v20M3.4 7l17.2 10M3.4 17L20.6 7"/><path d="M9.5 4L12 6.5 14.5 4M9.5 20L12 17.5 14.5 20"/>',
+      file:"sounds/snowfall.m4a" },
+    { id:"winter", label:"Winter", group:"music",
+      icon:'<path d="M12 3l-5 7h3l-4 6h12l-4-6h3z"/><path d="M12 16v5"/><path d="M4 5h.01M20 7h.01M18 3h.01"/>',
+      file:"sounds/winter.m4a" },
+    { id:"thanksgiving", label:"Thanksgiving", group:"music",
+      icon:'<path d="M12 21v-6"/><path d="M12 15l-6-2 1.5-2L4 8l3.5-.5L7 4l3 2 2-3 2 3 3-2-.5 3.5L20 8l-3.5 3L18 13z"/>',
+      file:"sounds/thanksgiving.m4a" },
     { id:"lakemarie", label:"Lake Marie", group:"music",
       icon:'<path d="M3 17c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"/><path d="M5 13l4-6 3 4 2-2 5 4"/>',
       file:"sounds/lakemarie.m4a" },
@@ -2139,6 +2388,7 @@
 
   function startSound(s){
     if(s.file) return startFileSound(s);
+    holdMediaSession(true);   // first, while still inside the tap
     audioCtx();
     var out = amp(0), mix = amp(soundLevel(s.id)), nodes = [], timers = [], alive = true;
     chain(out, mix, master);
@@ -2169,6 +2419,7 @@
         nodes.forEach(function(n){ try{ n.stop(); }catch(e){} });
         out.disconnect(); mix.disconnect();
         if(mixes[s.id] === mix) delete mixes[s.id];
+        if(!Object.keys(mixes).length) holdMediaSession(false);
       }, 900);
     };
   }
@@ -2195,9 +2446,9 @@
 
   function initSounds(){
     var btn = $("soundBtn"), panel = $("soundPanel"), grid = $("soundGrid"), vol = $("soundVol");
-    var mixBox = $("soundMix");
+    var mixBox = $("soundMix"), soundErr = $("soundErr");
 
-    function renderBtn(){ btn.classList.toggle("playing", Object.keys(playing).length > 0); }
+    function renderBtn(){ btn.classList.toggle("playing", Object.keys(playing).length > 0 || pl.playing); }
 
     // A volume slider for every sound that's on.
     function renderMix(){
@@ -2215,9 +2466,215 @@
         row.appendChild(r);
         mixBox.appendChild(row);
       });
+      if(pl.cur){
+        var row = document.createElement("label"), s = soundById(pl.cur.id);
+        row.className = "mix-row";
+        row.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h7M4 6h.01M4 12h.01M4 18h.01"/></svg><span class="mix-name">Playlist</span>';
+        var r = document.createElement("input");
+        r.type = "range"; r.min = "0"; r.max = "100";
+        r.value = Math.round(soundLevel("playlist") * 100);
+        r.setAttribute("aria-label", "Playlist volume");
+        r.addEventListener("input", function(){ setSoundLevel("playlist", r.value / 100); });
+        row.appendChild(r);
+        mixBox.appendChild(row);
+      }
       mixBox.hidden = !mixBox.children.length;
+      renderPages();
     }
-    function closePanel(){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+
+    /* ---- pages of tiles: as many rows as fit nicely, the rest on further
+       pages (arrows, dots, or swipe). Page size follows the panel's width. */
+    var pages = null;
+    function pageLayout(pg){
+      var els = pg.grid.children, n = els.length;
+      var cols = getComputedStyle(pg.grid).gridTemplateColumns.split(" ").filter(Boolean).length || 1;
+      var per = cols * pg.rows, count = Math.max(1, Math.ceil(n / per));
+      pg.count = count;
+      pg.at = Math.max(0, Math.min(pg.at, count - 1));
+      for(var i = 0; i < n; i++) els[i].classList.toggle("off-page", Math.floor(i / per) !== pg.at);
+      // same height on every page, so the panel doesn't jump on a short last page
+      var shown = els[pg.at * per];
+      pg.grid.style.minHeight = count > 1 && shown ? (pg.rows * shown.offsetHeight + (pg.rows - 1) * 6) + "px" : "";
+      pg.pager.hidden = count < 2;
+      if(count < 2){ pg.pager.innerHTML = ""; return; }
+      var html = '<button class="pg" type="button" data-d="-1" title="Previous page"' + (pg.at === 0 ? " disabled" : "") + '><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><span class="dots">';
+      for(var p = 0; p < count; p++){
+        var on = false;
+        for(var j = p * per; j < Math.min(n, (p + 1) * per); j++) if(els[j].classList.contains("on")) on = true;
+        html += '<button class="dot' + (p === pg.at ? " cur" : "") + (on ? " has-on" : "") + '" type="button" data-p="' + p + '" title="Page ' + (p + 1) + '"></button>';
+      }
+      html += '</span><button class="pg" type="button" data-d="1" title="Next page"' + (pg.at === count - 1 ? " disabled" : "") + '><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
+      pg.pager.innerHTML = html;
+    }
+    // as many rows per page as the screen holds, shared between the two sections;
+    // done when the panel opens (and on resize) so pages don't shift while tapping
+    function fitRows(){
+      if(!pages || panel.hidden) return;
+      var body = $("soundBody"), probe = pages[0].grid.querySelector(".sound:not(.off-page)") || pages[0].grid.firstElementChild;
+      if(!probe) return;
+      var th = probe.offsetHeight + 6;
+      var other = 0;   // headings, playlist bar: everything in the body except the tiles
+      [].forEach.call(body.children, function(el){
+        if(el === pages[0].grid || el === pages[1].grid) return;
+        var cs = getComputedStyle(el);
+        other += el.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+      });
+      var R = Math.max(4, Math.floor((body.clientHeight - other - 8) / th));
+      var need = pages.map(function(pg){
+        var cols = getComputedStyle(pg.grid).gridTemplateColumns.split(" ").filter(Boolean).length || 1;
+        return Math.ceil(pg.grid.children.length / cols);
+      });
+      // nature sounds (the shorter list) on one page if possible, music gets the rest
+      var a = Math.min(need[0], Math.max(2, R - 2));
+      var b = Math.max(2, Math.min(need[1], R - a));
+      pages[0].rows = a; pages[1].rows = b;
+    }
+    function renderPages(){
+      if(!pages || panel.hidden) return;
+      pages.forEach(pageLayout);
+    }
+    function pageGo(pg, to){
+      to = Math.max(0, Math.min(to, (pg.count || 1) - 1));
+      if(to === pg.at) return;
+      var cls = to > pg.at ? "from-right" : "from-left";
+      pg.at = to;
+      pageLayout(pg);
+      pg.grid.classList.remove("from-right", "from-left");
+      void pg.grid.offsetWidth;
+      pg.grid.classList.add(cls);
+    }
+
+    /* ---- spa music playlist: tracks play one after another, in the order
+       they were tapped, then start over. Short loops repeat until they've
+       played about PL_TURN seconds so they don't flash by. */
+    var PL_TURN = 120;
+    var tiles = {};
+    // iPhone/iPad ignore volume on audio elements; there tracks hand over at the end, no cross-fade
+    var volOK = (function(){ try{ var t = new Audio(); t.volume = .5; return t.volume === .5; }catch(e){ return false; } })();
+    var pl = { mode: store("pl_mode") === "1", list: [], at: 0, cur: null, playing: false };
+    try{ pl.list = JSON.parse(store("pl_list") || "[]") || []; }catch(e){ pl.list = []; }
+    pl.list = pl.list.filter(function(id){ var s = soundById(id); return s && s.group === "music"; });
+
+    function soundById(id){ for(var i = 0; i < SOUNDS.length; i++) if(SOUNDS[i].id === id) return SOUNDS[i]; return null; }
+    function plSave(){ store("pl_list", JSON.stringify(pl.list)); }
+
+    function plTrack(id, done){
+      var s = soundById(id), a = new Audio(s.file), level = 0, target = 1, played = 0, last = Date.now(), handed = false;
+      var FADE = volOK ? 2.5 : 0;
+      a.preload = "auto"; a.volume = 0;
+      var t = {
+        id: id,
+        play: function(){ last = Date.now(); var pr = a.play(); if(pr && pr.catch) pr.catch(function(){}); },
+        pause: function(){ a.pause(); },
+        stop: function(){ target = 0; if(!volOK) kill(); },
+        kill: kill
+      };
+      function kill(){ clearInterval(timer); a.pause(); a.removeAttribute("src"); a.load(); }
+      function handOver(){ if(handed) return; handed = true; t.stop(); done(); }
+      a.addEventListener("loadedmetadata", function(){ if(a.duration < PL_TURN) a.loop = true; });
+      a.addEventListener("ended", handOver);
+      var timer = setInterval(function(){
+        var now = Date.now();
+        if(!a.paused) played += (now - last) / 1000;
+        last = now;
+        level = target > level ? Math.min(target, level + .04) : Math.max(target, level - .04);
+        if(volOK) a.volume = Math.max(0, Math.min(1, level * soundVolume() * soundLevel("playlist")));
+        if(target === 0 && level === 0) return kill();
+        var d = a.duration;
+        if(!handed && isFinite(d) && d > 0){
+          var turn = d >= PL_TURN ? d : Math.ceil(PL_TURN / d) * d;
+          if(played >= turn - FADE - .1) handOver();
+        }
+      }, 100);
+      return t;
+    }
+    function plStartAt(i){
+      if(pl.cur) pl.cur.stop();
+      pl.cur = null;
+      if(!pl.list.length){ pl.playing = false; plRender(); return; }
+      pl.at = ((i % pl.list.length) + pl.list.length) % pl.list.length;
+      var me = pl.cur = plTrack(pl.list[pl.at], function(){ if(pl.cur === me) plStartAt(pl.at + 1); });
+      pl.playing = true;
+      me.play();
+      plRender();
+    }
+    function plStop(){
+      if(pl.cur) pl.cur.kill();
+      pl.cur = null; pl.playing = false;
+      plRender();
+    }
+    function plToggle(){
+      if(pl.playing){ pl.cur.pause(); pl.playing = false; }
+      else if(pl.cur){ pl.cur.play(); pl.playing = true; }
+      else plStartAt(pl.at);
+      plRender();
+    }
+    function plSetMode(on){
+      pl.mode = on;
+      store("pl_mode", on ? "1" : "0");
+      if(on){
+        // spa music stops layering while the playlist is in charge
+        SOUNDS.forEach(function(s){ if(s.group === "music" && playing[s.id]) stopSound(s.id); });
+      } else plStop();
+      plRender();
+    }
+    function plTap(s){
+      var k = pl.list.indexOf(s.id);
+      if(k === -1){ pl.list.push(s.id); }
+      else{
+        pl.list.splice(k, 1);
+        if(pl.cur && pl.cur.id === s.id) plStartAt(k);          // removed the one playing: go on to the next
+        else if(k < pl.at) pl.at--;
+        if(!pl.list.length) plStop();
+      }
+      plSave();
+      plRender();
+    }
+    function plRender(){
+      $("plMode").setAttribute("aria-pressed", pl.mode ? "true" : "false");
+      $("plBar").hidden = !pl.mode;
+      var play = $("plPlay");
+      play.innerHTML = pl.playing
+        ? '<svg viewBox="0 0 24 24"><path class="fill" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>'
+        : '<svg viewBox="0 0 24 24"><path class="fill" d="M7 5l12 7-12 7z"/></svg>';
+      play.title = pl.playing ? "Pause" : "Play";
+      play.disabled = $("plNext").disabled = !pl.list.length;
+      $("plNow").textContent = !pl.list.length ? "Tap tracks below in the order you want them"
+        : pl.cur ? (pl.playing ? "Playing " : "Paused: ") + soundById(pl.cur.id).label + " · " + (pl.at + 1) + " of " + pl.list.length
+        : pl.list.length + (pl.list.length === 1 ? " track" : " tracks") + " ready";
+      SOUNDS.forEach(function(s){
+        if(s.group !== "music") return;
+        var b = tiles[s.id], k = pl.list.indexOf(s.id), num = b.querySelector(".pl-num");
+        if(pl.mode && k !== -1){
+          if(!num){ num = document.createElement("i"); num.className = "pl-num"; b.appendChild(num); }
+          num.textContent = k + 1;
+        } else if(num) num.remove();
+        var on = pl.mode ? !!(pl.cur && pl.cur.id === s.id) : !!playing[s.id];
+        b.classList.toggle("queued", pl.mode && k !== -1);
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      renderBtn();
+      renderMix();
+    }
+    // closing plays the shrink animation first, then hides the panel
+    var closeTimer = null;
+    function openPanel(){
+      clearTimeout(closeTimer);
+      panel.classList.remove("closing");
+      panel.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      pages.forEach(function(pg){ pg.grid.style.minHeight = ""; pg.rows = 2; });
+      renderPages();
+      fitRows();
+      renderPages();
+    }
+    function closePanel(){
+      if(panel.hidden || panel.classList.contains("closing")) return;
+      btn.setAttribute("aria-expanded", "false");
+      panel.classList.add("closing");
+      closeTimer = setTimeout(function(){ panel.hidden = true; panel.classList.remove("closing"); }, 240);
+    }
 
     SOUNDS.forEach(function(s){
       var b = document.createElement("button");
@@ -2225,8 +2682,19 @@
       b.type = "button";
       b.setAttribute("aria-pressed", "false");
       b.innerHTML = '<svg viewBox="0 0 24 24">' + s.icon + '</svg><span>' + s.label + '</span>';
+      tiles[s.id] = b;
       b.addEventListener("click", function(){
-        if(playing[s.id]) stopSound(s.id); else startSound(s);
+        soundErr.hidden = true;
+        if(s.group === "music" && pl.mode){ plTap(s); return; }
+        try{
+          if(playing[s.id]) stopSound(s.id); else startSound(s);
+        }catch(err){
+          // show it rather than fail silently; drop a broken audio context so
+          // the next tap starts fresh
+          if(!s.file){ audio = null; master = null; noiseBufs = {}; delete mixes[s.id]; }
+          soundErr.textContent = s.label + " couldn't start: " + (err && (err.name + " " + err.message));
+          soundErr.hidden = false;
+        }
         var on = !!playing[s.id];
         b.classList.toggle("on", on);
         b.setAttribute("aria-pressed", on ? "true" : "false");
@@ -2235,6 +2703,34 @@
       });
       (s.group === "music" ? $("musicGrid") : grid).appendChild(b);
     });
+
+    pages = [
+      { grid: grid, pager: $("pgNature"), rows: 3, at: 0 },
+      { grid: $("musicGrid"), pager: $("pgMusic"), rows: 2, at: 0 }
+    ];
+    pages.forEach(function(pg){
+      pg.pager.addEventListener("click", function(e){
+        var d = e.target.closest("[data-d]"), dot = e.target.closest("[data-p]");
+        if(d) pageGo(pg, pg.at + Number(d.getAttribute("data-d")));
+        else if(dot) pageGo(pg, Number(dot.getAttribute("data-p")));
+      });
+      // swipe left/right on the tiles
+      var sx = 0, sy = 0;
+      pg.grid.addEventListener("touchstart", function(e){ sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+      pg.grid.addEventListener("touchend", function(e){
+        var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+        if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) pageGo(pg, pg.at + (dx < 0 ? 1 : -1));
+      }, {passive:true});
+      pg.grid.addEventListener("animationend", function(){ pg.grid.classList.remove("from-right", "from-left"); });
+    });
+    window.addEventListener("resize", function(){ fitRows(); renderPages(); });
+    $("soundClose").addEventListener("click", function(e){ e.stopPropagation(); closePanel(); });
+
+    $("plMode").addEventListener("click", function(){ plSetMode(!pl.mode); });
+    $("plPlay").addEventListener("click", plToggle);
+    $("plNext").addEventListener("click", function(){ plStartAt(pl.at + 1); });
+    $("plClear").addEventListener("click", function(){ pl.list = []; pl.at = 0; plSave(); plStop(); });
+    plRender();
 
     vol.value = Math.round(soundVolume() * 100);
     vol.addEventListener("input", function(){
@@ -2245,10 +2741,12 @@
 
     btn.addEventListener("click", function(e){
       e.stopPropagation();
-      panel.hidden = !panel.hidden;
-      btn.setAttribute("aria-expanded", panel.hidden ? "false" : "true");
+      if(panel.hidden || panel.classList.contains("closing")) openPanel(); else closePanel();
     });
     document.addEventListener("click", function(e){
+      // (a tap on something the panel just redrew, like the play button's icon,
+      // is no longer in the page; that's still a tap inside, not outside)
+      if(!document.contains(e.target)) return;
       if(!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) closePanel();
     });
     document.addEventListener("keydown", function(e){
@@ -2262,6 +2760,9 @@
   loadWeather();
   setInterval(loadWeather, 15*60*1000);
   setQuote();
+  initQuoteToggle();
+  initClocksToggle();
+  initBigClockToggle();
   initSearch();
   initSettings();
 
