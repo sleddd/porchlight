@@ -1,4 +1,5 @@
-<img width="1014" height="426" alt="Screenshot 2026-11-03 at 7 25 44 PM" src="https://github.com/user-attachments/assets/8f9d9936-64de-4ca7-8b0c-f8722abcc3cb" />
+<img width="2560" height="640" alt="GitHub banner · README header 1280×320@2x (2)" src="https://github.com/user-attachments/assets/cd87d6dd-2397-4e80-bf41-3f04dccd3001" />
+
 
 #
 
