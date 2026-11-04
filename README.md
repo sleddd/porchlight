@@ -2,18 +2,20 @@
 
 A new-tab page starter screen like momentum, but customized for me: a big clock over a fresh Unsplash photo, with world clocks, weather, a daily quote and nature sounds mixer.
 
-![mymomentum new tab](screenshots/new-tab.png)
+![mymomentum new tab](screenshots/new-tab.jpg)
 
 ## What's on it
 
-- **Clock** in the middle, with world clocks and weather along the top
-- **Background photos** from Unsplash, one random photo per request from the collection in `fetch-photos.js`
-- **Favorites and thumbs down**: heart a photo to keep it, thumbs-down one to never see it again
-- **Quotes** at the bottom, with *next quote* to skip
+- **Clock** in the middle, with world clocks and weather along the top. The big clock (clock icon in the toolbar) and the world clocks (arrow at the end of the row) can each be hidden
+- **Background photos** from Unsplash, one random photo per day from the collection in `fetch-photos.js`
+- **Photo menu** (sliders icon, bottom left): the photo's title and credit, a heart to save it, *Skip to next photo* with a preview of what's next, and your favorites to pick from
+- **Quote** in a glass card at the bottom right, with *next quote*; fold it down to a small pill
 - **Search** (press `/`) and an optional critter
-- **Sounds** (headphones icon): nature sounds and spa music you can layer, each with its own volume slider plus one for everything
+- **Sounds** (headphones icon): opens full screen. Layer nature sounds and spa music, each with its own volume slider plus one for everything. Turn on **Playlist** to play spa music tracks one after another in the order you tap them
 
-![Sound mixer](screenshots/sound-mixer.png)
+![Photo menu](screenshots/photo-menu.jpg)
+
+![Sound mixer](screenshots/sound-mixer.jpg)
 
 ### Music not included
 
