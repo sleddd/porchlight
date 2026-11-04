@@ -1,7 +1,7 @@
 {
   "name": "mymomentum",
   "private": true,
-  "description": "My Momentum start screen, also packaged as an iPhone/iPad app",
+  "description": "Porchlight: start screen and sound mixer, also packaged as an iPhone/iPad app",
   "scripts": {
     "build": "node build-app.js",
     "ios": "node build-app.js && npx cap sync ios && npx cap open ios"
