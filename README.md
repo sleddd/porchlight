@@ -1,6 +1,8 @@
-# Custom Starter Screen App
+# Custom Starter Screen + Sound Mixer
 
-A new-tab page starter screen like momentum, but customized for me: a big clock over a fresh Unsplash photo, with world clocks, weather, a daily quote and nature sounds mixer.
+A personal start screen and a calm corner in one. Open a new tab and you get a big clock over a fresh Unsplash photo, with world clocks, weather and a daily quote, a bit like Momentum but built around how I like things. Tap the headphones and it turns into a full screen ambient mixer: layer rain, birds, water and spa music, set each one's volume, or queue tracks into a playlist for focus or wind down time.
+
+It runs in any browser as a new tab page, and as an iPhone/iPad app with every sound stored on the device so it works offline.
 
 ![mymomentum new tab](screenshots/new-tab.jpg)
 
