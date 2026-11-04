@@ -19,7 +19,7 @@ It runs in any browser as your new tab page, and as an iPhone/iPad app that keep
 - **Quote** in a glass card at the bottom right, with *next quote*; fold it down to a small pill
 - **Search** (press `/`) and an optional critter
 - **Sounds** (headphones icon): opens full screen. Layer nature sounds and spa music, each with its own volume slider plus one for everything. Turn on **Playlist** to play spa music tracks one after another in the order you tap them
-- 
+
 ![Sound mixer](screenshots/sound-mixer.jpg)
 
 ![Photo menu](screenshots/photo-menu.jpg)
