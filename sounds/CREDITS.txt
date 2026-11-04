@@ -57,3 +57,18 @@ lakemarie.m4a      <- custom-sounds/lake-marie-i-ian-aisling-main-version-27028-
                       "Lake Marie I" by Ian Aisling
 porchlight.m4a     <- custom-sounds/leave-the-porch-light-on-cory-alstad-main-version-37050-02-25.mp3
                       "Leave the Porch Light On" by Cory Alstad
+
+Added Nov 2026 from the owner's mp3s (originals not kept; levelled to match the others;
+crickets and heartbeat extended to seamless 60-second loops):
+crickets, heartbeat, frost, space   <- same names .mp3
+wind2.m4a          <- wind.mp3   (the "Wind" tile; wind.m4a is "Breeze")
+piano2-12.m4a      <- piano-two ... piano-twelve.mp3
+piano13.m4a        <- pianio-seven.mp3
+flute2, flute3     <- flute-two, flute-three.mp3
+guitar1, 2, 4      <- guitar-one, -two, -four.mp3
+handpan2, handpan4 <- handpan.mp3, handpan-four.mp3
+jazz2, 4, 5, 6     <- jazz-two, -four, -five, -six.mp3
+spa3, spa7         <- spa-three, spa-seven.mp3
+singingbowls       <- singing-bowls.mp3
+snowfall           <- snowfall-music.mp3
+acoustic, dreamy, magic, thanksgiving, winter <- same names .mp3
