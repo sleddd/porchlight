@@ -4,6 +4,10 @@ A new-tab page starter screen like momentum, but customized for me: a big clock 
 
 ![mymomentum new tab](screenshots/new-tab.jpg)
 
+With the world clocks and the quote folded away:
+
+![Minimal view with clocks and quote folded](screenshots/minimal.jpg)
+
 ## What's on it
 
 - **Clock** in the middle, with world clocks and weather along the top. The big clock (clock icon in the toolbar) and the world clocks (arrow at the end of the row) can each be hidden
