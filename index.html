@@ -114,6 +114,9 @@
   .sound-grid{
     display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px;
     padding:0 2px 4px;
+    /* rows keep their natural height; a short last page leaves space below
+       instead of stretching its tiles to fill it */
+    align-content:start; grid-auto-rows:max-content;
   }
   .sound{
     display:flex; flex-direction:column; align-items:center; gap:8px;
@@ -218,7 +221,7 @@
   .pm-skip-text span{font-size:14px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .pm-skip > svg{width:24px; height:24px; flex-shrink:0; stroke:currentColor; fill:none; stroke-width:2;
                  stroke-linecap:round; stroke-linejoin:round}
-  .pm-favs{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px 12px; margin-bottom:26px}
+  .pm-favs{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px 12px; margin-bottom:6px}
   .pm-fav{position:relative; display:flex; flex-direction:column; gap:8px; min-width:0;
           background:none; border:none; padding:0; color:#fff; font:inherit; text-align:left; cursor:pointer}
   .pm-fav-img{position:relative; aspect-ratio:4 / 3; border-radius:12px; overflow:hidden;
@@ -236,7 +239,6 @@
   .pm-unfav svg{width:16px; height:16px; fill:none; stroke:rgba(255,255,255,.92); stroke-width:1.8; stroke-linejoin:round}
   .pm-unfav:hover{background:rgba(30,30,34,.85)}
   .pm-empty{grid-column:1 / -1; font-size:13.5px; opacity:.75}
-  .photo-menu .menu-blocked{padding:0; max-height:none}
 
   /* spa music playlist */
   .music-head{display:flex; align-items:center; gap:12px}
@@ -262,6 +264,35 @@
   .pl-now{flex:1; min-width:0; font-size:12.5px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .pl-clear{background:none; border:none; color:#fff; font:inherit; font-size:12px; opacity:.6; cursor:pointer; padding:6px}
   .pl-clear:hover{opacity:1}
+  .pl-clear:disabled{opacity:.25; cursor:default}
+  /* naming a playlist happens right in the bar */
+  .pl-name{flex:1; min-width:0; display:flex; align-items:center; gap:8px}
+  .pl-name[hidden]{display:none}
+  .pl-name input{
+    flex:1; min-width:0; padding:8px 12px; border-radius:9px;
+    border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.1);
+    color:#fff; font:inherit; font-size:14px; outline:none;
+  }
+  .pl-name input:focus{border-color:rgba(255,255,255,.55)}
+  .pl-name input::placeholder{color:rgba(255,255,255,.5)}
+  .pl-save-go{padding:7px 14px; border-radius:9px; border:none; cursor:pointer;
+              background:rgba(255,255,255,.88); color:#18181a; font:inherit; font-size:13px; font-weight:600}
+  .pl-bar.naming .pl-now, .pl-bar.naming #plSaveBtn, .pl-bar.naming #plClear{display:none}
+  /* saved playlists: tap to play, x to delete */
+  .pl-saved{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:-2px 2px 12px}
+  .pl-saved[hidden]{display:none}
+  .pl-saved-label{font-size:11px; letter-spacing:.7px; text-transform:uppercase; opacity:.6; margin-right:2px}
+  .pl-chip{
+    display:inline-flex; align-items:center; border-radius:999px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08);
+  }
+  .pl-chip.on{background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.4)}
+  .pl-chip button{background:none; border:none; color:#fff; font:inherit; cursor:pointer;
+                  -webkit-tap-highlight-color:transparent}
+  .pl-chip .pl-apply{padding:6px 4px 6px 13px; font-size:13px}
+  .pl-chip .pl-apply small{opacity:.6; font-size:11.5px; margin-left:5px}
+  .pl-chip .pl-del{padding:6px 11px 6px 7px; font-size:14px; opacity:.55}
+  .pl-chip .pl-del:hover{opacity:1}
   .sound{position:relative}
   .pl-num{position:absolute; top:6px; right:8px; min-width:18px; height:18px; padding:0 5px;
           border-radius:9px; background:#fff; color:#161618; font-style:normal;
@@ -369,19 +400,6 @@
   .fav.on{opacity:1}
   .fav.on svg{fill:#ff5a72; stroke:#ff5a72}
   .nope{margin-left:-4px}
-  .nope svg{fill:none; stroke-linecap:round}
-  .nope.on svg{fill:rgba(255,255,255,.35)}
-  .menu.nope-menu{min-width:280px; max-width:340px}
-  .menu-blocked{display:flex; flex-wrap:wrap; gap:8px; padding:2px 12px 10px;
-                max-height:116px; overflow-y:auto}   /* long hide lists scroll here */
-  .chip{
-    display:inline-flex; align-items:center; gap:6px;
-    padding:5px 10px; border-radius:999px; cursor:pointer;
-    border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08);
-    color:#fff; font:inherit; font-size:12.5px;
-  }
-  .chip:hover{background:rgba(255,255,255,.18)}
-  .chip b{font-weight:400; opacity:.65}
 
   /* ---------- settings popup ---------- */
   .place{position:relative}
@@ -808,8 +826,15 @@
               <svg viewBox="0 0 24 24"><path class="fill" d="M5 5l10 7-10 7z"/><path d="M19 5v14"/></svg>
             </button>
             <span class="pl-now" id="plNow"></span>
+            <form class="pl-name" id="plNameForm" hidden>
+              <input id="plNameInput" type="text" maxlength="40" placeholder="Name this playlist" autocomplete="off" enterkeyhint="done">
+              <button class="pl-save-go" type="submit">Save</button>
+              <button class="pl-clear" id="plNameCancel" type="button">Cancel</button>
+            </form>
+            <button class="pl-clear" id="plSaveBtn" type="button" title="Save these tracks and the sounds playing with them">Save</button>
             <button class="pl-clear" id="plClear" type="button">Clear</button>
           </div>
+          <div class="pl-saved" id="plSaved" hidden></div>
           <div class="sound-grid" id="musicGrid"></div>
           </div>
           <!-- pinned to the bottom of the panel so the sliders stay in view -->
@@ -865,8 +890,6 @@
         <div class="pm-scroll">
           <div class="pm-row"><span class="pm-head">Favorites</span><span class="pm-count" id="pmFavCount"></span></div>
           <div class="pm-favs" id="favMenuList"></div>
-          <div class="pm-row pm-hidden-row"><span class="pm-head">Hidden</span><span class="pm-count" id="pmHiddenCount"></span></div>
-          <div class="menu-blocked" id="blockedList"></div>
         </div>
       </div>
 
@@ -1845,7 +1868,6 @@
   }
   function openMenu(){
     renderFavMenu();
-    renderBlocked();
     renderUpNext();
     $("settingsMenu").hidden = false;
     $("settingsBtn").setAttribute("aria-expanded","true");
@@ -1945,58 +1967,6 @@
       b.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); choose(); } });
       box.appendChild(b);
     });
-  }
-
-  /* ================= thumbs down =================
-     Saved as "blocked" ({photos}) through store(), so it lands in
-     prefs.json; fetch-photos.js checks it with isBlocked(). */
-  var BLOCK_KINDS = ["photos"], BLOCK_MAX_PHOTOS = 1000;
-  function blockedSaved(){
-    var b = null;
-    try{ b = JSON.parse(store("blocked") || "null"); }catch(e){}
-    if(!b || typeof b !== "object") b = {};
-    BLOCK_KINDS.forEach(function(k){ if(!Array.isArray(b[k])) b[k] = []; });
-    return b;
-  }
-  function blockSave(b){
-    b.photos = b.photos.slice(-BLOCK_MAX_PHOTOS);
-    store("blocked", JSON.stringify(b));
-    if(menuOpen()) renderBlocked();
-  }
-  function addBlock(b, kind, value){
-    if(value && b[kind].indexOf(value) === -1) b[kind].push(value);
-  }
-
-  function renderBlocked(){
-    var box = $("blockedList"), b = blockedSaved(), any = false;
-    $("pmHiddenCount").textContent = b.photos.length || "";
-    box.innerHTML = "";
-    function chip(text, kindName, onClick){
-      var c = document.createElement("button");
-      c.type = "button";
-      c.className = "chip";
-      c.title = "Show these again";
-      c.textContent = text + " ";
-      var x = document.createElement("b");
-      x.textContent = kindName + " \u00d7";
-      c.appendChild(x);
-      c.addEventListener("click", function(e){
-        e.stopPropagation();          // keep the menu open after the chip goes
-        onClick();
-      });
-      box.appendChild(c);
-      any = true;
-    }
-    if(b.photos.length){
-      chip(b.photos.length + " photo" + (b.photos.length === 1 ? "" : "s"), "clear", function(){
-        if(!window.confirm("Allow all " + b.photos.length + " hidden photos to show again?")) return;
-        b.photos = [];
-        blockSave(b);
-      });
-    }
-    if(!any){
-      box.innerHTML = '<div class="menu-empty">Nothing hidden \u2014 use the thumbs-down on a photo.</div>';
-    }
   }
 
   function initSettings(){
@@ -2600,6 +2570,10 @@
       }
       mixBox.hidden = !mixBox.children.length;
       renderPages();
+      if(pl.mode && tiles.rain){
+        $("plSaveBtn").disabled = !canSave();
+        plRenderSaved();
+      }
     }
 
     /* ---- pages of tiles: as many rows as fit nicely, the rest on further
@@ -2677,6 +2651,106 @@
 
     function soundById(id){ for(var i = 0; i < SOUNDS.length; i++) if(SOUNDS[i].id === id) return SOUNDS[i]; return null; }
     function plSave(){ store("pl_list", JSON.stringify(pl.list)); }
+
+    // saved playlists: [{name, ids}], newest first
+    function plSavedList(){
+      var l;
+      try{ l = JSON.parse(store("pl_saved") || "[]"); }catch(e){ l = []; }
+      return (Array.isArray(l) ? l : []).filter(function(x){ return x && x.name && Array.isArray(x.ids); });
+    }
+    function plSavedStore(l){ store("pl_saved", JSON.stringify(l)); }
+    // the nature sounds on right now, with their levels: saved along with the tracks
+    function mixNow(){
+      return SOUNDS.filter(function(s){ return s.group !== "music" && playing[s.id]; })
+                   .map(function(s){ return { id: s.id, level: soundLevel(s.id) }; });
+    }
+    function mixKey(sounds){ return (sounds || []).map(function(x){ return x.id; }).sort().join(","); }
+    function canSave(){ return pl.list.length > 0 || mixNow().length > 0; }
+    function plSaveAs(name){
+      name = String(name || "").trim();
+      if(!name || !canSave()) return;
+      var l = plSavedList().filter(function(x){ return x.name.toLowerCase() !== name.toLowerCase(); });
+      l.unshift({ name: name, ids: pl.list.slice(), sounds: mixNow(), level: soundLevel("playlist") });
+      plSavedStore(l);
+    }
+    function plApply(saved){
+      // nature sounds: exactly the saved ones, at their saved levels
+      var want = {};
+      (saved.sounds || []).forEach(function(x){ var s = soundById(x.id); if(s && s.group !== "music") want[x.id] = x; });
+      SOUNDS.forEach(function(s){
+        if(s.group === "music") return;
+        if(want[s.id]){
+          setSoundLevel(s.id, want[s.id].level);
+          if(!playing[s.id]){ try{ startSound(s); }catch(e){} }
+        } else if(playing[s.id]) stopSound(s.id);
+        var on = !!playing[s.id];
+        tiles[s.id].classList.toggle("on", on);
+        tiles[s.id].setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      if(typeof saved.level === "number") setSoundLevel("playlist", saved.level);
+      // tracks: load them and start from the top
+      var ids = saved.ids.filter(function(id){ var s = soundById(id); return s && s.group === "music"; });
+      pl.list = ids; pl.at = 0;
+      plSave();
+      if(ids.length) plStartAt(0); else plStop();
+    }
+    function plNaming(on){
+      $("plBar").classList.toggle("naming", on);
+      $("plNameForm").hidden = !on;
+      if(on){
+        var input = $("plNameInput");
+        input.value = "";
+        input.focus();
+      }
+    }
+    // the playlist bar and the saved row take room from the tiles: when either
+    // appears or goes away, work out the rows per page again
+    var chromeWas = "";
+    function refitIfChromeChanged(){
+      var now = $("plBar").hidden + "," + $("plSaved").hidden;
+      if(now === chromeWas) return;
+      chromeWas = now;
+      if(pages && !panel.hidden){
+        pages.forEach(function(pg){ pg.grid.style.minHeight = ""; });
+        fitRows(); renderPages();
+      }
+    }
+    function plRenderSaved(){
+      var box = $("plSaved"), l = plSavedList(), cur = pl.list.join(",") + "|" + mixKey(mixNow());
+      box.hidden = !pl.mode || !l.length;
+      box.innerHTML = "";
+      refitIfChromeChanged();
+      if(box.hidden) return;
+      var lab = document.createElement("span");
+      lab.className = "pl-saved-label"; lab.textContent = "Saved";
+      box.appendChild(lab);
+      l.forEach(function(x){
+        var chip = document.createElement("span");
+        chip.className = "pl-chip" + (x.ids.join(",") + "|" + mixKey(x.sounds) === cur ? " on" : "");
+        var go = document.createElement("button");
+        var sounds = (x.sounds || []).map(function(y){ var s = soundById(y.id); return s ? s.label : ""; }).filter(Boolean);
+        var tracks = x.ids.map(function(id){ var s = soundById(id); return s ? s.label : ""; }).filter(Boolean);
+        go.type = "button"; go.className = "pl-apply";
+        go.title = "Play " + x.name + (tracks.length ? "\nTracks: " + tracks.join(", ") : "") + (sounds.length ? "\nSounds: " + sounds.join(", ") : "");
+        go.textContent = x.name;
+        var n = document.createElement("small");
+        n.textContent = [x.ids.length ? x.ids.length + (x.ids.length === 1 ? " track" : " tracks") : "",
+                         sounds.length ? sounds.length + (sounds.length === 1 ? " sound" : " sounds") : ""].filter(Boolean).join(" \u00b7 ");
+        go.appendChild(n);
+        go.addEventListener("click", function(){ plApply(x); });
+        var del = document.createElement("button");
+        del.type = "button"; del.className = "pl-del"; del.title = "Delete " + x.name;
+        del.setAttribute("aria-label", "Delete " + x.name);
+        del.textContent = "\u00d7";
+        del.addEventListener("click", function(){
+          if(!window.confirm("Delete the playlist \u201c" + x.name + "\u201d?")) return;
+          plSavedStore(plSavedList().filter(function(y){ return y.name !== x.name; }));
+          plRenderSaved();
+        });
+        chip.appendChild(go); chip.appendChild(del);
+        box.appendChild(chip);
+      });
+    }
 
     function plTrack(id, done){
       var s = soundById(id), a = new Audio(s.file), level = 0, target = 1, played = 0, last = Date.now(), handed = false;
@@ -2759,6 +2833,9 @@
         : '<svg viewBox="0 0 24 24"><path class="fill" d="M7 5l12 7-12 7z"/></svg>';
       play.title = pl.playing ? "Pause" : "Play";
       play.disabled = $("plNext").disabled = !pl.list.length;
+      $("plSaveBtn").disabled = !canSave();
+      if(!pl.mode || !canSave()) plNaming(false);
+      plRenderSaved();
       $("plNow").textContent = !pl.list.length ? "Tap tracks below in the order you want them"
         : pl.cur ? (pl.playing ? "Playing " : "Paused: ") + soundById(pl.cur.id).label + " · " + (pl.at + 1) + " of " + pl.list.length
         : pl.list.length + (pl.list.length === 1 ? " track" : " tracks") + " ready";
@@ -2850,6 +2927,19 @@
     $("plPlay").addEventListener("click", plToggle);
     $("plNext").addEventListener("click", function(){ plStartAt(pl.at + 1); });
     $("plClear").addEventListener("click", function(){ pl.list = []; pl.at = 0; plSave(); plStop(); });
+    $("plSaveBtn").addEventListener("click", function(){ if(canSave()) plNaming(true); });
+    $("plNameCancel").addEventListener("click", function(){ plNaming(false); });
+    $("plNameForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var name = $("plNameInput").value.trim();
+      if(!name){ $("plNameInput").focus(); return; }
+      plSaveAs(name);
+      plNaming(false);
+      plRenderSaved();
+    });
+    $("plNameInput").addEventListener("keydown", function(e){
+      if(e.key === "Escape"){ e.stopPropagation(); plNaming(false); }   // don't close the whole panel
+    });
     plRender();
 
     vol.value = Math.round(soundVolume() * 100);
