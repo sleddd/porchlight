@@ -1,4 +1,4 @@
-<img width="2560" height="640" alt="GitHub banner · README header 1280×320@2x (2)" src="https://github.com/user-attachments/assets/cd87d6dd-2397-4e80-bf41-3f04dccd3001" />
+<img width="2560" height="640" alt="GitHub banner · README header 1280×320@2x" src="https://github.com/user-attachments/assets/01b8c016-3b08-4b0c-a8d6-f30330aef702" />
 
 
 #
