@@ -4,7 +4,7 @@
 
 A light left on for you, every time you open a new tab.
 
-Porchlight greets you with a big clock over a fresh Unsplash photo, with world clocks, weather and a daily quote close at hand. When you need a quieter moment, tap the headphones and the screen opens into a full sound mixer. Layer rain, birdsong, moving water and spa music, set each one to the level you like, or let tracks play back to back as a playlist.
+Porchlight greets you with a beautiful background behind your main clock, adjustable world clocks, weather, and a daily quote. When you need a quieter moment, tap the headphones and the screen opens into a full sound mixer. No timer, just focus. Layer rain, birdsong, moving water and spa music, set each one to the level you like, or let tracks play back to back as a playlist.
 
 It runs in any browser as your new tab page, and as an iPhone/iPad app that keeps every sound on the device, so the light stays on even offline.
 
