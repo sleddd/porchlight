@@ -169,6 +169,75 @@
   @keyframes pgFromLeft {from{opacity:0; transform:translateX(-28px)} to{opacity:1; transform:none}}
   @media (prefers-reduced-motion:reduce){ .sound-grid.from-right, .sound-grid.from-left{animation:none} }
 
+  /* photo menu: frosted glass card above the photo controls */
+  .menu.photo-menu{
+    width:470px; min-width:0; max-width:calc(100vw - 40px); padding:0; overflow:hidden;
+    display:flex; flex-direction:column;
+    max-height:calc(100vh - 110px);
+    background:rgba(28,30,36,.3);
+    backdrop-filter:blur(30px) saturate(150%); -webkit-backdrop-filter:blur(30px) saturate(150%);
+    border:1px solid rgba(255,255,255,.16); border-radius:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    text-shadow:none; font-size:14px;
+  }
+  .menu.photo-menu[hidden]{display:none}
+  .pm-top{padding:24px 26px 30px; border-bottom:1px solid rgba(255,255,255,.12); flex-shrink:0}
+  .pm-scroll{overflow-y:auto; padding:22px 26px 18px; min-height:0}
+  .pm-row{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}
+  .pm-head{font-size:12px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; opacity:.72}
+  .pm-count{font-size:13px; opacity:.8}
+  .pm-now{display:flex; align-items:center; gap:14px; margin-bottom:30px}
+  .pm-info{flex:1; min-width:0}
+  .pm-title{font-size:20px; font-weight:600; line-height:1.25;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .pm-by{font-size:13.5px; opacity:.75; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pm-by a{color:inherit; text-decoration:none; border-bottom:1px solid rgba(255,255,255,.3)}
+  .pm-act{
+    width:52px; height:52px; flex-shrink:0; border-radius:14px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:#fff;
+    transition:background .2s; -webkit-tap-highlight-color:transparent;
+  }
+  .pm-act:hover{background:rgba(255,255,255,.16)}
+  .pm-act svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linejoin:round; stroke-linecap:round}
+  .pm-act.on svg{fill:rgba(255,255,255,.92); stroke:rgba(255,255,255,.92)}
+  .pm-skip{
+    display:flex; align-items:center; gap:16px; width:100%; padding:11px 22px 11px 11px;
+    border-radius:16px; cursor:pointer; text-align:left;
+    background:rgba(255,255,255,.12); color:#fff; font:inherit; text-shadow:none;
+    border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    transition:background .2s, transform .15s; -webkit-tap-highlight-color:transparent;
+  }
+  .pm-skip:hover{background:rgba(255,255,255,.18)}
+  .pm-skip:active{transform:scale(.99)}
+  .pm-skip-thumb{width:84px; height:64px; flex-shrink:0; border-radius:10px;
+                 background:rgba(0,0,0,.18) center/cover no-repeat}
+  .pm-skip-text{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
+  .pm-skip-text b{font-size:17px; font-weight:600}
+  .pm-skip-text span{font-size:14px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pm-skip > svg{width:24px; height:24px; flex-shrink:0; stroke:currentColor; fill:none; stroke-width:2;
+                 stroke-linecap:round; stroke-linejoin:round}
+  .pm-favs{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px 12px; margin-bottom:26px}
+  .pm-fav{position:relative; display:flex; flex-direction:column; gap:8px; min-width:0;
+          background:none; border:none; padding:0; color:#fff; font:inherit; text-align:left; cursor:pointer}
+  .pm-fav-img{position:relative; aspect-ratio:4 / 3; border-radius:12px; overflow:hidden;
+              background:rgba(255,255,255,.08); outline:2px solid transparent; outline-offset:2px;
+              transition:outline-color .2s, transform .15s}
+  .pm-fav:hover .pm-fav-img{transform:scale(1.03)}
+  .pm-fav.current .pm-fav-img{outline-color:rgba(255,255,255,.85)}
+  .pm-fav img{width:100%; height:100%; object-fit:cover; display:block}
+  .pm-fav-label{font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pm-unfav{
+    position:absolute; top:8px; right:8px; width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    background:rgba(30,30,34,.6); border:none; -webkit-tap-highlight-color:transparent;
+  }
+  .pm-unfav svg{width:16px; height:16px; fill:none; stroke:rgba(255,255,255,.92); stroke-width:1.8; stroke-linejoin:round}
+  .pm-unfav:hover{background:rgba(30,30,34,.85)}
+  .pm-empty{grid-column:1 / -1; font-size:13.5px; opacity:.75}
+  .photo-menu .menu-blocked{padding:0; max-height:none}
+
   /* spa music playlist */
   .music-head{display:flex; align-items:center; gap:12px}
   .pl-mode{
@@ -275,16 +344,16 @@
   }
   .place{
     display:flex; align-items:center; gap:11px;
-    font-size:13.5px; opacity:.9; text-shadow:var(--shadow);
+    font-size:13.5px; text-shadow:var(--shadow);   /* no opacity here: it would stop the glass menu blurring the photo */
     justify-self:start; min-width:0;
   }
-  .place svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;
+  .place > svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;
              stroke-linecap:round;flex-shrink:0}
-  .place button{
+  .place > button{
     background:none;border:none;color:inherit;font:inherit;cursor:pointer;
     opacity:.9;transition:opacity .18s;padding:0;
   }
-  .place button:hover{opacity:1;text-decoration:underline}
+  .place > button:hover{opacity:1;text-decoration:underline}
 
   .fav{
     display:inline-flex; align-items:center; padding:0;
@@ -671,6 +740,8 @@
     }
     /* a sheet along the bottom; tap outside it to close */
     .menu{bottom:max(10px, env(safe-area-inset-bottom)); max-height:75vh; background:rgba(22,22,24,.96)}
+    .menu.photo-menu{max-width:none; width:auto; background:rgba(28,30,36,.4)}
+    .pm-top, .pm-scroll{padding-left:18px; padding-right:18px}
     .sound-panel{padding-left:12px; padding-right:12px}
     .sound-grid{grid-template-columns:repeat(4, 1fr)}
   }
@@ -774,30 +845,35 @@
         <svg viewBox="0 0 24 24"><circle cx="7" cy="8" r="2.4"/><path d="M3 8h1.6M9.4 8H21"/><circle cx="16" cy="16" r="2.4"/><path d="M3 16h10.6M18.4 16H21"/></svg>
       </button>
 
-      <div class="menu" id="settingsMenu" hidden>
-        <button class="menu-item" id="nextPhoto">
-          <svg viewBox="0 0 24 24"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>
-          <span><em>Skip to next photo</em></span>
-        </button>
-        <div class="menu-sep"></div>
-        <div class="menu-head">Favorites</div>
-        <div class="menu-list" id="favMenuList"></div>
-        <div class="menu-sep"></div>
-        <div class="menu-head">Hidden (click to show again)</div>
-        <div class="menu-blocked" id="blockedList"></div>
+      <div class="menu photo-menu" id="settingsMenu" hidden>
+        <div class="pm-top">
+          <div class="pm-now">
+            <div class="pm-info">
+              <div class="pm-title" id="pmTitle"></div>
+              <div class="pm-by" id="pmBy"></div>
+            </div>
+            <button class="pm-act" id="pmFav" type="button" title="Save to favorites" aria-pressed="false">
+              <svg viewBox="0 0 24 24"><path d="M12 20.4l-1.6-1.5C5.5 14.5 2.6 11.9 2.6 8.6 2.6 6 4.7 4 7.3 4c1.5 0 2.9.7 3.8 1.8h1.8C13.8 4.7 15.2 4 16.7 4c2.6 0 4.7 2 4.7 4.6 0 3.3-2.9 5.9-7.8 10.3z"/></svg>
+            </button>
+          </div>
+          <button class="pm-skip" id="nextPhoto" type="button">
+            <span class="pm-skip-thumb" id="pmNextThumb"></span>
+            <span class="pm-skip-text"><b>Skip to next photo</b><span id="pmNextLabel">Up next: a new photo</span></span>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <div class="pm-scroll">
+          <div class="pm-row"><span class="pm-head">Favorites</span><span class="pm-count" id="pmFavCount"></span></div>
+          <div class="pm-favs" id="favMenuList"></div>
+          <div class="pm-row pm-hidden-row"><span class="pm-head">Hidden</span><span class="pm-count" id="pmHiddenCount"></span></div>
+          <div class="menu-blocked" id="blockedList"></div>
+        </div>
       </div>
 
-      <div class="menu nope-menu" id="nopeMenu" hidden>
-        <div class="menu-head">Don't show again</div>
-        <div id="nopeOptions"></div>
-      </div>
 
       <div class="credit" id="credit"></div>
       <button id="favBtn" class="fav" title="Save this photo to favorites" aria-pressed="false">
         <svg viewBox="0 0 24 24"><path d="M12 20.4l-1.6-1.5C5.5 14.5 2.6 11.9 2.6 8.6 2.6 6 4.7 4 7.3 4c1.5 0 2.9.7 3.8 1.8h1.8C13.8 4.7 15.2 4 16.7 4c2.6 0 4.7 2 4.7 4.6 0 3.3-2.9 5.9-7.8 10.3z"/></svg>
-      </button>
-      <button id="nopeBtn" class="fav nope" title="Don't show this again" aria-expanded="false">
-        <svg viewBox="0 0 24 24"><path d="M17 3v11"/><path d="M9 18.1L10 14H4.9a2 2 0 0 1-1.9-2.5l2.3-7A2 2 0 0 1 7.2 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2.8a2 2 0 0 0-1.8 1.1l-3.5 6.9A3 3 0 0 1 9 18.1z"/></svg>
       </button>
     </div>
     <div class="quote" id="quote">
@@ -974,9 +1050,21 @@
     try{ store("photo_of_day", JSON.stringify({day: todayKey(), photo: photo})); }catch(e){}
   }
 
+  // The photo's real title, as Unsplash shows it, taken from its page address:
+  // ".../photos/drangarnir-sea-stacks-under-cloudy-sky-8zD7rs8UpxU" gives
+  // "Drangarnir sea stacks under cloudy sky". (Older saves kept the search word,
+  // like "nature", as the label.) No extra Unsplash request needed.
+  function titleFromLink(link){
+    var m = /unsplash\.com\/photos\/([^/?#]+)/.exec(link || "");
+    if(!m) return "";
+    var slug = m[1];
+    if(slug.length <= 12 || slug.charAt(slug.length - 12) !== "-") return "";   // no title, just the 11-character id
+    var t = decodeURIComponent(slug.slice(0, -12)).replace(/-/g, " ").trim();
+    return t ? t.charAt(0).toUpperCase() + t.slice(1) : "";
+  }
   function labelFor(photo){
     var custom = store("name_" + (photo.url || photo.id));
-    return custom || photo.label;
+    return custom || titleFromLink(photo.link) || photo.label;
   }
 
   function showPhoto(photo){
@@ -988,6 +1076,7 @@
       bg.classList.add("on");
       renderCredit(photo);
       renderFav();
+      if(menuOpen()) renderFavMenu();
     };
     img.onerror = function(){
       renderCredit(null);
@@ -1746,36 +1835,105 @@
     $("settingsBtn").setAttribute("aria-expanded","false");
   }
   function openMenu(){
-    closeNope();
     renderFavMenu();
     renderBlocked();
+    renderUpNext();
     $("settingsMenu").hidden = false;
     $("settingsBtn").setAttribute("aria-expanded","true");
   }
 
+  // "Up next": the next random photo is fetched ahead of time (once, when the
+  // menu opens with none waiting) so the skip button can show it; skipping
+  // then shows exactly that photo.
+  var upNext = null, upNextLoading = null;
+  try{ upNext = JSON.parse(store("up_next") || "null"); }catch(e){ upNext = null; }
+  function getUpNext(){
+    if(upNext && upNext.url && !isBlocked(upNext)) return Promise.resolve(upNext);
+    upNext = null;
+    if(!upNextLoading){
+      upNextLoading = getRandomPhoto().then(function(p){
+        upNextLoading = null; upNext = p;
+        store("up_next", JSON.stringify(p));
+        return p;
+      }, function(err){ upNextLoading = null; throw err; });
+    }
+    return upNextLoading;
+  }
+  function skipPhoto(){
+    var n = upNext;
+    upNext = null; store("up_next", "");
+    if(n && n.url && !isBlocked(n)){ cachePhoto(n); showPhoto(n); }
+    else loadPhoto(true);
+  }
+  function renderUpNext(){
+    var thumb = $("pmNextThumb"), label = $("pmNextLabel");
+    function show(p){
+      thumb.style.backgroundImage = p && p.thumb ? 'url("' + p.thumb + '")' : "";
+      label.textContent = "Up next: " + (p ? (labelFor(p) || "a new photo") : "a new photo");
+    }
+    show(upNext && !isBlocked(upNext) ? upNext : null);
+    getUpNext().then(function(p){ if(menuOpen()) show(p); }, function(){ show(null); });
+  }
+
+  function renderNowShowing(){
+    $("pmTitle").textContent = current ? (labelFor(current) || "Today\u2019s photo") : "No photo yet";
+    var by = $("pmBy");
+    by.innerHTML = "";
+    if(current && current.by){
+      by.appendChild(document.createTextNode("Photo by "));
+      var a = document.createElement(current.link ? "a" : "span");
+      a.textContent = current.by;
+      if(current.link){ a.href = current.link; a.target = "_blank"; a.rel = "noopener"; }
+      by.appendChild(a);
+      by.appendChild(document.createTextNode(" on Unsplash"));
+    }
+    var on = isFav(current), fb = $("pmFav");
+    fb.classList.toggle("on", on);
+    fb.setAttribute("aria-pressed", on ? "true" : "false");
+    fb.title = on ? "Remove from favorites" : "Save to favorites";
+  }
+
   function renderFavMenu(){
-    var box = $("favMenuList");
-    var l = favList();
+    var box = $("favMenuList"), l = favList();
+    $("pmFavCount").textContent = l.length ? l.length + (l.length === 1 ? " photo" : " photos") : "";
+    renderNowShowing();
     if(!l.length){
-      box.innerHTML = '<div class="menu-empty">No favorites yet — tap the heart.</div>';
+      box.innerHTML = '<div class="pm-empty">No favorites yet \u2014 tap the heart.</div>';
       return;
     }
     box.innerHTML = "";
     l.forEach(function(f){
-      var b = document.createElement("button");
-      b.className = "menu-fav";
-      b.title = f.place || "Saved photo";
+      var b = document.createElement("div");
+      b.className = "pm-fav" + (current && current.url === f.url ? " current" : "");
+      b.setAttribute("role", "button");
+      b.tabIndex = 0;
+      var name = labelFor({url:f.url, id:f.id, link:f.link, label:f.place}) || "Saved photo";
+      b.title = name + " \u2014 show it now";
+      var frame = document.createElement("div");
+      frame.className = "pm-fav-img";
       var im = document.createElement("img");
-      im.src = thumbUrl(f);
-      im.alt = f.place || "";
-      im.loading = "lazy";
-      b.appendChild(im);
-      b.addEventListener("click", function(){
+      im.src = thumbUrl(f); im.alt = name; im.loading = "lazy";
+      frame.appendChild(im);
+      var un = document.createElement("button");
+      un.type = "button"; un.className = "pm-unfav"; un.title = "Remove from favorites";
+      un.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 20.4l-1.6-1.5C5.5 14.5 2.6 11.9 2.6 8.6 2.6 6 4.7 4 7.3 4c1.5 0 2.9.7 3.8 1.8h1.8C13.8 4.7 15.2 4 16.7 4c2.6 0 4.7 2 4.7 4.6 0 3.3-2.9 5.9-7.8 10.3z"/></svg>';
+      un.addEventListener("click", function(e){
+        e.stopPropagation();
+        favSave(favList().filter(function(x){ return x.url !== f.url; }));
+      });
+      frame.appendChild(un);
+      var cap = document.createElement("div");
+      cap.className = "pm-fav-label";
+      cap.textContent = name;
+      b.appendChild(frame); b.appendChild(cap);
+      function choose(){
         var photo = {id:f.id, url:f.url, thumb:f.thumb, label:f.place, by:f.by, link:f.link};
         cachePhoto(photo);   // a chosen favorite becomes today's photo too
         showPhoto(photo);
         closeMenu();
-      });
+      }
+      b.addEventListener("click", choose);
+      b.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); choose(); } });
       box.appendChild(b);
     });
   }
@@ -1800,45 +1958,9 @@
     if(value && b[kind].indexOf(value) === -1) b[kind].push(value);
   }
 
-  function nopeOpen(){ return !$("nopeMenu").hidden; }
-  function closeNope(){
-    $("nopeMenu").hidden = true;
-    $("nopeBtn").setAttribute("aria-expanded","false");
-    $("nopeBtn").classList.remove("on");
-  }
-  function openNope(){
-    if(!current) return;
-    closeMenu();
-    var box = $("nopeOptions");
-    box.innerHTML = "";
-    function option(text, kind){
-      var b = document.createElement("button");
-      b.className = "menu-item";
-      b.textContent = text;
-      b.addEventListener("click", function(){ dislike(kind); });
-      box.appendChild(b);
-    }
-    option("This photo", "photos");
-    $("nopeMenu").hidden = false;
-    $("nopeBtn").setAttribute("aria-expanded","true");
-    $("nopeBtn").classList.add("on");
-  }
-
-  // Block this photo, drop it from favorites, and move on to a new one.
-  function dislike(kind){
-    if(!current) return;
-    var b = blockedSaved();
-    addBlock(b, "photos", current.url || current.id);   // the url matches every copy of this photo
-    blockSave(b);
-    var l = favList();
-    var out = l.filter(function(f){ return !isBlocked({id:f.id, url:f.url}); });
-    if(out.length !== l.length) favSave(out);
-    closeNope();
-    loadPhoto(true);
-  }
-
   function renderBlocked(){
     var box = $("blockedList"), b = blockedSaved(), any = false;
+    $("pmHiddenCount").textContent = b.photos.length || "";
     box.innerHTML = "";
     function chip(text, kindName, onClick){
       var c = document.createElement("button");
@@ -1868,31 +1990,20 @@
     }
   }
 
-  function initNope(){
-    $("nopeBtn").addEventListener("click", function(e){
-      e.stopPropagation();
-      nopeOpen() ? closeNope() : openNope();
-    });
-    document.addEventListener("click", function(e){
-      if(nopeOpen() && !$("nopeMenu").contains(e.target) && e.target !== $("nopeBtn")) closeNope();
-    });
-    document.addEventListener("keydown", function(e){
-      if(e.key === "Escape" && nopeOpen()) closeNope();
-    });
-  }
-
   function initSettings(){
     $("settingsBtn").addEventListener("click", function(e){
       e.stopPropagation();
       menuOpen() ? closeMenu() : openMenu();
     });
     $("nextPhoto").addEventListener("click", function(){
-      loadPhoto(true);
+      skipPhoto();
       closeMenu();
     });
+    $("pmFav").addEventListener("click", function(e){ e.stopPropagation(); toggleFav(); });
     document.addEventListener("click", function(e){
       if(!menuOpen()) return;
-      if(!$("settingsMenu").contains(e.target) && e.target !== $("settingsBtn")) closeMenu();
+      if(!document.contains(e.target)) return;   // tapped something the menu just redrew
+      if(!$("settingsMenu").contains(e.target) && !$("settingsBtn").contains(e.target)) closeMenu();
     });
     document.addEventListener("keydown", function(e){
       if(e.key === "Escape" && menuOpen()) closeMenu();
@@ -2769,7 +2880,6 @@
   loadSavedPrefs();
   loadPhoto();
   initFav();
-  initNope();
   initCritterToggle();
   initSounds();
   initCritter("octavian", "hop", 700);
