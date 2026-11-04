@@ -6,9 +6,9 @@
 Porchlight greets you with a beautiful background behind your main clock, adjustable world clocks, weather, and a daily quote. When you need a quieter moment, tap the headphones and the screen opens into a full sound mixer. No timer, just focus. Layer rain, birdsong, moving water and spa music, set each one to the level you like, or let tracks play back to back as a playlist.
 
 It runs in any browser as your new tab page, and as an iPhone/iPad app that keeps every sound on the device, so the light stays on even offline.
-![Minimal view with clocks and quote folded](screenshots/minimal.jpg)
+![Minimal view with clocks and quote folded](https://github.com/user-attachments/assets/8996cc45-1844-4bcc-b09d-deccff5dbde2)
 
-![Porchlight new tab](screenshots/new-tab.jpg)
+![Porchlight new tab](https://github.com/user-attachments/assets/4a8b05cb-8935-42a4-9707-c9353f15bd0b)
 
 
 ## What's on it
@@ -20,7 +20,7 @@ It runs in any browser as your new tab page, and as an iPhone/iPad app that keep
 - **Search** (press `/`) and an optional critter
 - **Sounds** (headphones icon): opens full screen. Layer nature sounds and spa music, each with its own volume slider plus one for everything. Turn on **Playlist** to play spa music tracks one after another in the order you tap them
 
-![Sound mixer](screenshots/sound-mixer.jpg)
+![Sound mixer](https://github.com/user-attachments/assets/7a451a1b-518a-45a1-a5a8-3faa234ffc2f)
 
 ![Photo menu](screenshots/photo-menu.jpg)
 
