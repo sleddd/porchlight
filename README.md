@@ -1,4 +1,4 @@
-<img width="2560" height="1280" alt="GitHub banner · social preview 1280×640@2x" src="https://github.com/user-attachments/assets/b0bbec12-d59c-4e20-8d88-54441fbd4df8" />
+<img width="1014" height="426" alt="Screenshot 2026-11-03 at 7 25 44 PM" src="https://github.com/user-attachments/assets/8f9d9936-64de-4ca7-8b0c-f8722abcc3cb" />
 
 #
 
