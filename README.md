@@ -1,8 +1,10 @@
-# Custom Starter Screen + Sound Mixer
+# Porchlight
 
-A personal start screen and a calm corner in one. Open a new tab and you get a big clock over a fresh Unsplash photo, with world clocks, weather and a daily quote, a bit like Momentum but built around how I like things. Tap the headphones and it turns into a full screen ambient mixer: layer rain, birds, water and spa music, set each one's volume, or queue tracks into a playlist for focus or wind down time.
+A light left on for you, every time you open a new tab.
 
-It runs in any browser as a new tab page, and as an iPhone/iPad app with every sound stored on the device so it works offline.
+Porchlight greets you with a big clock over a fresh Unsplash photo, with world clocks, weather and a daily quote close at hand. When you need a quieter moment, tap the headphones and the screen opens into a full sound mixer. Layer rain, birdsong, moving water and spa music, set each one to the level you like, or let tracks play back to back as a playlist.
+
+It runs in any browser as your new tab page, and as an iPhone/iPad app that keeps every sound on the device, so the light stays on even offline.
 
 ![Porchlight new tab](screenshots/new-tab.jpg)
 
