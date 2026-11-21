@@ -15,6 +15,8 @@ var FILES = ["index.html", "fetch-photos.js", "prefs.js", "gerald.png", "octavia
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, "sounds"), { recursive: true });
 FILES.forEach(function (f) { fs.copyFileSync(path.join(root, f), path.join(out, f)); });
+// your Unsplash key, kept out of git
+if (fs.existsSync(path.join(root, "unsplash-key.js"))) fs.copyFileSync(path.join(root, "unsplash-key.js"), path.join(out, "unsplash-key.js"));
 fs.readdirSync(path.join(root, "sounds"))
   .filter(function (f) { return /\.(m4a|txt)$/.test(f); })
   .forEach(function (f) { fs.copyFileSync(path.join(root, "sounds", f), path.join(out, "sounds", f)); });

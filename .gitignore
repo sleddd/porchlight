@@ -13,3 +13,6 @@ sounds/custom/
 
 # macOS folder files
 .DS_Store
+
+# your Unsplash key: never commit
+unsplash-key.js

@@ -3,7 +3,8 @@
  * https://unsplash.com/documentation#get-a-random-photo
  */
 
-var UNSPLASH_ACCESS_KEY = "";
+// the key lives in unsplash-key.js, which git ignores; without it there are no photos
+var UNSPLASH_ACCESS_KEY = window.UNSPLASH_KEY || "";
 var COLLECTION = "Sl1OUepgHLo";   // https://unsplash.com/collections/Sl1OUepgHLo/wallpapers
 
 /* Starting favorites, used only when none are saved yet. */
