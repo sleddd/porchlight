@@ -7,3 +7,9 @@ ios/App/App/public/
 # licensed music, kept local only
 sounds/lakemarie.m4a
 sounds/porchlight.m4a
+
+# personal-use licensed sounds: never commit
+sounds/custom/
+
+# macOS folder files
+.DS_Store

@@ -70,7 +70,14 @@
   .critter-toggle[aria-pressed="false"] svg .rocker{transform:translateY(6px)}
   .critter-toggle[aria-pressed="false"]{opacity:.5}
 
-  /* ---------- nature sounds ---------- */
+  /* ---------- sounds ---------- */
+  :root{
+    --sp-bg:#0c0c11; --sp-card:#15151c; --sp-card2:#111117; --sp-hover:#1b1b24;
+    --sp-line:rgba(255,255,255,.08); --sp-line2:rgba(255,255,255,.16);
+    --sp-mute:rgba(255,255,255,.56); --sp-on:#1c1d3b; --sp-on-line:#6a6ef0; --sp-cur:#22233f;
+    --sp-accent:#8b8ff9; --sp-accent2:#6366f1; --sp-grad:linear-gradient(135deg,#8b5cf6,#3b82f6);
+    --sp-pad:28px;
+  }
   .sounds{position:relative}
   .tool.playing{opacity:1}
   .tool.playing::after{
@@ -78,15 +85,14 @@
     background:currentColor; margin-top:-1px;
   }
   /* Open, the sound panel grows from beside the headphones to fill the whole
-     screen: frosted glass over the photo, with an X to close. */
+     screen, with an X to close. Library on the left, player on the right,
+     levels along the bottom. */
   .sound-panel{
     position:fixed; inset:0; z-index:50; text-align:left;
     display:flex; flex-direction:column;
-    padding:max(22px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right))
-            max(20px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
-    background:rgba(16,16,18,.38);
-    backdrop-filter:blur(34px) saturate(150%); -webkit-backdrop-filter:blur(34px) saturate(150%);
-    text-shadow:0 1px 2px rgba(0,0,0,.35);
+    padding:max(24px, env(safe-area-inset-top)) max(var(--sp-pad), env(safe-area-inset-right))
+            0 max(var(--sp-pad), env(safe-area-inset-left));
+    background:var(--sp-bg); color:#fff; text-shadow:none; font-size:15px;
     animation:soundOpen .38s cubic-bezier(.2,.8,.2,1);
   }
   .sound-panel[hidden]{display:none}
@@ -99,78 +105,283 @@
     from{clip-path:inset(0 0 0 0 round 0); opacity:1}
     to  {clip-path:inset(60px calc(100% - 444px) calc(100% - 360px) 24px round 14px); opacity:0}
   }
-  .sound-top{display:flex; align-items:center; gap:12px; padding:2px 4px 14px 12px; flex-shrink:0}
-  .sound-title{font-size:15px; letter-spacing:.3px; opacity:.95}
+  @media (prefers-reduced-motion:reduce){ .sound-panel, .sound-panel.closing{animation:none} }
+  .sound-panel button{font-family:inherit}
+  .sound-panel svg, .alarm-screen svg{stroke:currentColor; fill:none; stroke-linecap:round; stroke-linejoin:round}
+  .sound-panel svg .fill, .alarm-screen svg .fill{fill:currentColor}
+  .sound-top{display:flex; align-items:center; gap:12px; padding:4px 0 22px; flex-shrink:0}
+  .sound-title{font-size:26px; font-weight:600; letter-spacing:-.2px}
   .sound-close{
-    margin-left:auto; width:40px; height:40px; border-radius:50%; cursor:pointer;
+    margin-left:auto; width:46px; height:46px; border-radius:50%; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:#fff;
+    background:none; border:1px solid var(--sp-line2); color:#fff;
     -webkit-tap-highlight-color:transparent; transition:background .2s;
   }
-  .sound-close:hover{background:rgba(255,255,255,.22)}
-  .sound-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round}
-  .sound-body{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden}
-  @media (prefers-reduced-motion:reduce){ .sound-panel, .sound-panel.closing{animation:none} }
-  .sound-grid{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px;
-    padding:0 2px 4px;
-    /* rows keep their natural height; a short last page leaves space below
-       instead of stretching its tiles to fill it */
-    align-content:start; grid-auto-rows:max-content;
+  .sound-close:hover{background:rgba(255,255,255,.08)}
+  .sound-close svg{width:18px; height:18px; stroke-width:2}
+
+  .sp-main{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,370px); gap:36px}
+  .sp-lib, .sp-side{min-height:0; overflow-y:auto; overscroll-behavior:contain; padding-bottom:28px}
+  .sp-lib{padding-right:4px}
+  .sp-head{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 16px; margin:6px 0 18px}
+  .sp-label{font-size:13px; font-weight:600; letter-spacing:1.8px; text-transform:uppercase}
+  .sp-count{font-size:14px; color:var(--sp-mute)}
+  .sp-music{margin-top:40px}
+  .sp-hint{font-size:14.5px; color:var(--sp-mute); margin:-2px 0 18px}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{
+    padding:8px 16px; border-radius:999px; cursor:pointer;
+    border:1px solid var(--sp-line2); background:none; color:#fff; font-size:14px;
+    -webkit-tap-highlight-color:transparent; transition:background .15s;
   }
+  @media (hover:hover){ .chip:hover{background:rgba(255,255,255,.06)} }
+  .chip.on, .chip.on:hover{background:#f4f4f6; color:#111; border-color:transparent; font-weight:600}
+
+  .sound-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr)); gap:10px}
   .sound{
-    display:flex; flex-direction:column; align-items:center; gap:8px;
-    padding:14px 4px 11px; border:1px solid transparent; border-radius:10px;
-    background:none; color:#fff; font:inherit; font-size:12px; letter-spacing:.2px;
-    cursor:pointer; opacity:.55; transition:opacity .18s, background .18s, border-color .18s;
+    position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    min-height:96px; padding:16px 8px 20px; border-radius:12px;
+    border:1px solid var(--sp-line); background:var(--sp-card); color:#fff; font-size:14px;
+    cursor:pointer; transition:background .15s, border-color .15s;
     -webkit-tap-highlight-color:transparent; touch-action:manipulation;
   }
-  /* mouse only: on touch screens :hover sticks after a tap, so a tile you
-     just turned off would still look shaded */
-  @media (hover:hover){
-    .sound:hover{opacity:.9; background:rgba(255,255,255,.07)}
+  /* mouse only: on touch screens :hover sticks after a tap */
+  @media (hover:hover){ .sound:hover{background:var(--sp-hover); border-color:var(--sp-line2)} }
+  .sound.on, .sound.on:hover{background:var(--sp-on); border-color:var(--sp-on-line)}
+  .sound.hide{display:none}
+  .sound svg{width:24px; height:24px; stroke-width:1.5; flex-shrink:0}
+  .sound .nm{
+    max-width:100%; text-align:center; line-height:1.25; color:rgba(255,255,255,.86);
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
-  .sound.on, .sound.on:hover{opacity:1; background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.2)}
+  .sound.on .nm{color:#fff}
+  /* a nature sound's level, under its name while it plays */
+  .lvl{position:absolute; left:16%; right:16%; bottom:9px; height:3px; border-radius:2px;
+       background:rgba(255,255,255,.14); overflow:hidden; display:none}
+  .sound.on .lvl{display:block}
+  .lvl i{display:block; height:100%; width:100%; background:var(--sp-accent); border-radius:2px}
+  /* place in Up next */
+  .pl-num{position:absolute; top:8px; right:8px; min-width:22px; height:22px; padding:0 6px;
+          border-radius:11px; background:#f4f4f6; color:#111; font-style:normal;
+          font-size:12px; font-weight:700; line-height:22px; text-align:center}
+  /* the track playing now */
+  .eq{position:absolute; top:11px; left:12px; height:13px; display:flex; align-items:flex-end; gap:2px}
+  .eq i{width:3px; height:100%; background:var(--sp-accent); border-radius:1px; transform-origin:bottom;
+        animation:eq .9s ease-in-out infinite}
+  .eq i:nth-child(2){animation-delay:-.3s}
+  .eq i:nth-child(3){animation-delay:-.6s}
+  .eq.paused i{animation-play-state:paused}
+  @keyframes eq{0%,100%{transform:scaleY(.35)} 50%{transform:scaleY(1)}}
+  @media (prefers-reduced-motion:reduce){ .eq i{animation:none; transform:scaleY(.7)} }
+
+  /* player card */
+  .np{background:var(--sp-card2); border:1px solid var(--sp-line); border-radius:22px; padding:22px}
+  .np-top{display:flex; align-items:center; gap:16px}
+  .np-art{width:64px; height:64px; flex-shrink:0; border-radius:16px; background:var(--sp-grad);
+          display:flex; align-items:center; justify-content:center; color:#fff}
+  .np-art svg{width:28px; height:28px; stroke-width:1.6}
+  .np-info{min-width:0}
+  .np-kicker{font-size:12px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; color:var(--sp-mute)}
+  .np-title{font-size:21px; font-weight:600; margin:3px 0 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .np-sub{font-size:14px; color:var(--sp-mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .np-bar{height:3px; border-radius:2px; background:rgba(255,255,255,.12); overflow:hidden; margin:20px 0 18px}
+  .np-bar i{display:block; height:100%; width:0; background:linear-gradient(90deg,#8b5cf6,#6366f1); border-radius:2px; transition:width .5s linear}
+  .np-ctl{display:flex; align-items:center; justify-content:space-between}
+  .np-btn{
+    width:48px; height:48px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; background:none; color:#fff;
+    -webkit-tap-highlight-color:transparent; transition:background .15s, opacity .15s;
+  }
+  .np-btn svg{width:22px; height:22px; stroke-width:1.7}
+  .np-btn:disabled{opacity:.3; cursor:default}
+  .np-btn.tg{opacity:.55}
+  .np-btn.tg[aria-pressed="true"]{opacity:1; background:#24253f; color:var(--sp-accent)}
+  .np-play{width:64px; height:64px; background:var(--sp-accent2); box-shadow:0 6px 24px rgba(99,102,241,.4)}
+  .np-play svg{width:24px; height:24px}
+  .np-sep{height:1px; background:var(--sp-line); margin:22px 0 20px}
+  .np-row{display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:15px}
+  .np-sleep{margin:18px 0 12px; font-size:15px}
+  .np-sleep span{color:var(--sp-mute)}
+  .switch{
+    position:relative; width:52px; height:30px; flex-shrink:0; border-radius:999px; border:none; cursor:pointer;
+    background:rgba(255,255,255,.18); transition:background .2s; -webkit-tap-highlight-color:transparent;
+  }
+  .switch::after{content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%;
+                 background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .2s}
+  .switch[aria-checked="true"]{background:var(--sp-accent)}
+  .switch[aria-checked="true"]::after{transform:translateX(22px)}
+
+  .np-tabs{display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; padding:5px; margin:24px 0 14px;
+           background:#1a1a22; border-radius:14px}
+  .np-tab{
+    display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 4px;
+    border:none; border-radius:10px; background:none; color:rgba(255,255,255,.75);
+    font-size:14.5px; cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  }
+  .np-tab svg{width:16px; height:16px; stroke-width:1.8}
+  .np-tab[aria-selected="true"]{background:#f4f4f6; color:#111; font-weight:600}
+  .np-pane[hidden]{display:none}
+  .np-empty{font-size:14px; color:var(--sp-mute); line-height:1.5; padding:8px 12px 12px}
+
+  /* Up next and Mixes rows */
+  .q-row, .mx-row{
+    display:flex; align-items:center; gap:12px; padding:9px 6px 9px 12px; border-radius:12px; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  @media (hover:hover){ .q-row:hover, .mx-row:hover{background:rgba(255,255,255,.04)} }
+  .q-row.cur, .mx-row.on, .q-row.cur:hover, .mx-row.on:hover{background:var(--sp-cur)}
+  .q-n{width:16px; flex-shrink:0; text-align:center; font-size:13px; color:var(--sp-mute)}
+  .q-row > svg{width:20px; height:20px; flex-shrink:0; stroke-width:1.6}
+  .q-name{flex:1; min-width:0; display:flex; flex-direction:column}
+  .q-name b{font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .q-name small{font-size:13px; color:var(--sp-mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .q-acts{display:flex; flex-shrink:0}
+  .q-acts button{
+    width:34px; height:34px; border-radius:50%; border:none; background:none; color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; opacity:.8; -webkit-tap-highlight-color:transparent;
+  }
+  .q-acts button:hover{opacity:1; background:rgba(255,255,255,.08)}
+  .q-acts button:disabled{opacity:.2; cursor:default; background:none}
+  .q-acts svg{width:16px; height:16px; stroke-width:1.8}
+  .mx-art{width:40px; height:40px; flex-shrink:0; border-radius:11px; background:var(--sp-grad);
+          display:flex; align-items:center; justify-content:center}
+  .mx-art svg{width:19px; height:19px; stroke-width:1.7}
+  .q-foot{display:flex; justify-content:flex-end; margin:8px 0 18px}
+  .linkbtn{background:none; border:none; color:rgba(255,255,255,.75); font-size:14.5px; cursor:pointer; padding:6px 10px}
+  .linkbtn:hover{color:#fff}
+  .linkbtn.danger{color:#ff9d92}
+  .linkbtn[hidden]{display:none}
+
+  .save-box{border:1px solid var(--sp-line); border-radius:16px; padding:16px 18px 18px; background:#13131a}
+  .save-box label{display:block; font-size:14.5px; color:rgba(255,255,255,.8); margin-bottom:12px}
+  .save-row{display:flex; gap:10px}
+  .input{
+    flex:1; min-width:0; padding:12px 14px; border-radius:10px;
+    border:1px solid var(--sp-line2); background:var(--sp-bg); color:#fff; font:inherit; font-size:15px; outline:none;
+  }
+  .input:focus{border-color:var(--sp-accent)}
+  .input::placeholder{color:rgba(255,255,255,.4)}
+  select.input{appearance:none; -webkit-appearance:none; cursor:pointer; padding-right:36px;
+    background:var(--sp-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/16px}
+  .btn-white{
+    padding:12px 20px; border-radius:10px; border:none; cursor:pointer;
+    background:#f4f4f6; color:#111; font-size:15px; font-weight:600; -webkit-tap-highlight-color:transparent;
+  }
+  .btn-white:disabled{opacity:.35; cursor:default}
+  .btn-ghost{padding:12px 18px; border-radius:10px; border:1px solid var(--sp-line2); background:none; color:#fff; font-size:15px; cursor:pointer}
+
+  /* alarms */
+  .al-card{display:flex; align-items:center; gap:12px; padding:14px 16px; margin-bottom:10px;
+           border:1px solid var(--sp-line); border-radius:16px; background:#13131a}
+  .al-card.off .al-main{opacity:.5}
+  .al-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; text-align:left;
+           background:none; border:none; color:#fff; cursor:pointer; padding:0}
+  .al-time{font-size:32px; font-weight:300; letter-spacing:-.5px; line-height:1.1}
+  .al-time small{font-size:15px; font-weight:400; margin-left:4px; letter-spacing:0}
+  .al-meta{font-size:13.5px; color:var(--sp-mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .al-add{width:100%; margin-top:4px; display:flex; align-items:center; justify-content:center; gap:8px}
+  .al-add svg{width:16px; height:16px; stroke-width:2}
+  .al-next{font-size:14px; margin:16px 2px 6px}
+  .al-note{font-size:13px; color:var(--sp-mute); line-height:1.5; margin:8px 2px 0}
+  .al-snooze{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; margin-bottom:12px;
+             border-radius:12px; background:var(--sp-cur); font-size:14px}
+  .al-form{display:flex; flex-direction:column; gap:18px; padding:4px 2px}
+  .al-form[hidden], .al-field[hidden]{display:none}
+  .al-field{display:flex; flex-direction:column; gap:8px}
+  .al-lab, .al-field > label{font-size:14px; color:rgba(255,255,255,.8)}
+  .al-lab b{color:#fff; font-weight:600; margin-left:4px}
+  .al-field small{font-size:13px; color:var(--sp-mute)}
+  .al-time-in{font-size:28px; font-weight:300; padding:8px 14px; color-scheme:dark}
+  .al-days{display:flex; gap:6px}
+  .al-days .chip{flex:1; padding:9px 0; min-width:0}
+  .al-btns{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .al-btns .linkbtn{margin-left:auto}
+
+  /* levels: pinned to the bottom of the panel so the sliders stay in view */
   .sound-foot{
-    flex-shrink:0; margin-top:10px; padding:4px 10px 6px;
-    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:14px;
+    flex-shrink:0; margin:0 calc(-1 * var(--sp-pad));
+    padding:16px var(--sp-pad) max(18px, env(safe-area-inset-bottom));
+    background:var(--sp-card2); border-top:1px solid var(--sp-line);
   }
-  .sound-mix{max-height:36vh; overflow-y:auto; padding:12px 0 6px;
-             display:grid; grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); column-gap:40px; row-gap:12px}
-  .sound-vol{max-width:600px}
-  @media (pointer:coarse){ .mix-row{padding-top:12px; padding-bottom:12px} .sound-mix{row-gap:8px} }   /* finger-sized */
-  .sound-err{padding:10px 12px 0; font-size:12px; color:#ffb4a8; user-select:text; -webkit-user-select:text}
+  .mix-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px}
+  .mix-head span:last-child{font-size:14px; color:var(--sp-mute); text-align:right}
+  .sound-mix{max-height:26vh; overflow-y:auto; padding:12px 0 8px;
+             display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); column-gap:48px; row-gap:4px}
+  .sound-mix[hidden], .mix-empty[hidden]{display:none}
+  .mix-empty{font-size:14px; color:var(--sp-mute); padding:12px 0 10px}
+  .mix-row{display:flex; align-items:center; gap:14px; padding:7px 0; font-size:15px}
+  .mix-row svg{width:18px; height:18px; stroke-width:1.6; flex-shrink:0; color:var(--sp-accent)}
+  .mix-name{width:118px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .sound-vol{border-top:1px solid var(--sp-line); padding-top:14px; margin-top:4px; max-width:620px}
+  .sound-vol svg{color:#fff}
+  .sound-vol .mix-name{font-weight:600}
+  .sound-err{padding:0 0 10px; font-size:13px; color:#ffb4a8; user-select:text; -webkit-user-select:text}
   .sound-err[hidden]{display:none}
-  .sound svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.5;
-             stroke-linecap:round;stroke-linejoin:round}
-  .sound-subhead{padding-top:14px}
-  /* pages of tiles: arrows + dots in each section heading, swipe on touch */
-  .section-head{display:flex; align-items:center; gap:12px}
-  .section-head .pager{margin-left:auto}
-  .music-head .pager{margin-left:4px}
-  .pager{display:inline-flex; align-items:center; gap:2px; text-transform:none; letter-spacing:0}
-  .pager[hidden]{display:none}
-  .pager .pg{
-    width:28px; height:28px; border-radius:50%; border:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.08); color:#fff; -webkit-tap-highlight-color:transparent;
+  @media (pointer:coarse){ .mix-row{padding:11px 0} }   /* finger-sized */
+
+  /* sliders: lavender up to the thumb */
+  .sl{-webkit-appearance:none; appearance:none; flex:1; min-width:0; height:22px; margin:0;
+      background:transparent; cursor:pointer; --p:50%}
+  .sl:focus{outline:none}
+  .sl::-webkit-slider-runnable-track{height:6px; border-radius:3px;
+      background:linear-gradient(to right, var(--sp-accent) var(--p), rgba(255,255,255,.16) var(--p))}
+  .sl::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; margin-top:-7px; border-radius:50%;
+      background:var(--sp-accent); border:3px solid #c9cbff; box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .sl::-moz-range-track{height:6px; border-radius:3px;
+      background:linear-gradient(to right, var(--sp-accent) var(--p), rgba(255,255,255,.16) var(--p))}
+  .sl::-moz-range-thumb{width:14px; height:14px; border-radius:50%; background:var(--sp-accent); border:3px solid #c9cbff}
+  .sl:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(139,143,249,.35)}
+
+  /* narrower screens: the panel scrolls as one column, player first */
+  @media (max-width:1000px){ .sp-main{gap:24px} }
+  @media (max-width:820px){
+    :root{--sp-pad:16px}
+    .sound-top{padding-bottom:14px}
+    .sound-title{font-size:22px}
+    .sp-main{display:flex; flex-direction:column; overflow-y:auto; overscroll-behavior:contain; gap:28px}
+    .sp-lib, .sp-side{overflow:visible; min-height:auto; padding-bottom:0}
+    .sp-lib{padding-right:0; padding-bottom:28px}
+    .sp-side{order:-1}
+    .np{padding:18px}
+    .sound-grid{grid-template-columns:repeat(auto-fill, minmax(82px, 1fr)); gap:8px}
+    .sound{min-height:86px; padding:14px 6px 18px; font-size:12.5px; gap:8px}
+    .sound-mix{grid-template-columns:1fr; max-height:22vh}
+    .mix-head span:last-child{display:none}
+    .mix-name{width:96px}
   }
-  .pager .pg:disabled{opacity:.3; cursor:default}
-  .pager .pg svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2;
-                 stroke-linecap:round; stroke-linejoin:round}
-  .pager .dots{display:flex}
-  .pager .dot{width:18px; height:22px; padding:0; border:none; background:none; cursor:pointer;
-              -webkit-tap-highlight-color:transparent}
-  .pager .dot::before{content:""; display:block; width:7px; height:7px; margin:auto; border-radius:50%;
-                      background:rgba(255,255,255,.3); transition:background .2s}
-  .pager .dot.cur::before{background:#fff}
-  .pager .dot.has-on::before{box-shadow:0 0 0 2px rgba(255,255,255,.55)}   /* something on that page is playing */
-  .sound.off-page{display:none}
-  .sound-grid.from-right{animation:pgFromRight .28s ease}
-  .sound-grid.from-left{animation:pgFromLeft .28s ease}
-  @keyframes pgFromRight{from{opacity:0; transform:translateX(28px)} to{opacity:1; transform:none}}
-  @keyframes pgFromLeft {from{opacity:0; transform:translateX(-28px)} to{opacity:1; transform:none}}
-  @media (prefers-reduced-motion:reduce){ .sound-grid.from-right, .sound-grid.from-left{animation:none} }
+
+  /* alarm ringing: full screen, over everything */
+  .alarm-screen{
+    position:fixed; inset:0; z-index:70; overflow-y:auto;
+    display:flex; justify-content:center;
+    padding:max(40px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom));
+    background:var(--sp-bg); color:#fff; text-shadow:none;
+  }
+  .alarm-screen[hidden]{display:none}
+  .alarm-screen button{font-family:inherit}
+  .as-inner{width:100%; max-width:420px; min-height:100%; display:flex; flex-direction:column; align-items:center; text-align:center}
+  .as-kicker{margin-top:5vh; font-size:14px; font-weight:600; letter-spacing:2.4px; text-transform:uppercase; color:rgba(255,255,255,.6)}
+  .as-time{margin-top:12px; font-size:min(30vw, 132px); font-weight:200; letter-spacing:-3px; line-height:1}
+  .as-ampm{font-size:.24em; font-weight:400; letter-spacing:0; margin-left:8px}
+  .as-greet{margin-top:22px; font-size:24px}
+  .as-card{width:100%; margin:9vh 0 7vh; padding:20px 18px; text-align:left;
+           border:1px solid var(--sp-line2); border-radius:24px; background:#1a1a20}
+  .as-top{display:flex; align-items:center; gap:16px}
+  .as-top .np-art{width:56px; height:56px}
+  .as-name{font-size:19px; font-weight:600}
+  .as-sub{font-size:15px; color:rgba(255,255,255,.66); margin-top:2px}
+  .as-card .np-bar{margin:22px 0 10px}
+  .as-card .np-bar[hidden]{display:none}
+  .as-vol{font-size:14.5px; color:rgba(255,255,255,.66)}
+  .as-start{margin-top:14px; width:100%}
+  .as-start[hidden]{display:none}
+  .as-actions{width:100%; margin-top:auto; display:flex; flex-direction:column; align-items:center}
+  .as-btn{width:100%; height:64px; border-radius:999px; font-size:18px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent}
+  .as-btn[hidden], .as-link[hidden]{display:none}
+  .as-snooze{background:#1a1a20; border:1px solid rgba(255,255,255,.22); color:#fff; margin-bottom:12px}
+  .as-stop{background:#f2f2f4; border:none; color:#111}
+  .as-link{margin-top:20px; background:none; border:none; color:#b9b5ff; font-size:16px; cursor:pointer; padding:4px 8px}
 
   /* photo menu: frosted glass card above the photo controls */
   .menu.photo-menu{
@@ -239,75 +450,6 @@
   .pm-unfav svg{width:16px; height:16px; fill:none; stroke:rgba(255,255,255,.92); stroke-width:1.8; stroke-linejoin:round}
   .pm-unfav:hover{background:rgba(30,30,34,.85)}
   .pm-empty{grid-column:1 / -1; font-size:13.5px; opacity:.75}
-
-  /* spa music playlist */
-  .music-head{display:flex; align-items:center; gap:12px}
-  .pl-mode{
-    display:inline-flex; align-items:center; gap:6px; margin-left:auto;
-    padding:5px 11px; border-radius:999px; cursor:pointer;
-    border:1px solid rgba(255,255,255,.2); background:none; color:#fff;
-    font:inherit; font-size:11px; letter-spacing:.6px; text-transform:uppercase; opacity:.75;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .pl-mode svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round}
-  .pl-mode[aria-pressed="true"]{opacity:1; background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.35)}
-  .pl-bar{display:flex; align-items:center; gap:8px; margin:0 2px 10px; padding:8px 10px;
-          border-radius:10px; background:rgba(255,255,255,.06)}
-  .pl-bar[hidden]{display:none}
-  .pl-btn{width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
-          display:flex; align-items:center; justify-content:center;
-          background:rgba(255,255,255,.12); color:#fff; -webkit-tap-highlight-color:transparent}
-  .pl-btn:disabled{opacity:.35; cursor:default}
-  .pl-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8;
-              stroke-linecap:round; stroke-linejoin:round}
-  .pl-btn svg .fill{fill:currentColor}
-  .pl-now{flex:1; min-width:0; font-size:12.5px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .pl-clear{background:none; border:none; color:#fff; font:inherit; font-size:12px; opacity:.6; cursor:pointer; padding:6px}
-  .pl-clear:hover{opacity:1}
-  .pl-clear:disabled{opacity:.25; cursor:default}
-  /* naming a playlist happens right in the bar */
-  .pl-name{flex:1; min-width:0; display:flex; align-items:center; gap:8px}
-  .pl-name[hidden]{display:none}
-  .pl-name input{
-    flex:1; min-width:0; padding:8px 12px; border-radius:9px;
-    border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.1);
-    color:#fff; font:inherit; font-size:14px; outline:none;
-  }
-  .pl-name input:focus{border-color:rgba(255,255,255,.55)}
-  .pl-name input::placeholder{color:rgba(255,255,255,.5)}
-  .pl-save-go{padding:7px 14px; border-radius:9px; border:none; cursor:pointer;
-              background:rgba(255,255,255,.88); color:#18181a; font:inherit; font-size:13px; font-weight:600}
-  .pl-bar.naming .pl-now, .pl-bar.naming #plSaveBtn, .pl-bar.naming #plClear{display:none}
-  /* saved playlists: tap to play, x to delete */
-  .pl-saved{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:-2px 2px 12px}
-  .pl-saved[hidden]{display:none}
-  .pl-saved-label{font-size:11px; letter-spacing:.7px; text-transform:uppercase; opacity:.6; margin-right:2px}
-  .pl-chip{
-    display:inline-flex; align-items:center; border-radius:999px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08);
-  }
-  .pl-chip.on{background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.4)}
-  .pl-chip button{background:none; border:none; color:#fff; font:inherit; cursor:pointer;
-                  -webkit-tap-highlight-color:transparent}
-  .pl-chip .pl-apply{padding:6px 4px 6px 13px; font-size:13px}
-  .pl-chip .pl-apply small{opacity:.6; font-size:11.5px; margin-left:5px}
-  .pl-chip .pl-del{padding:6px 11px 6px 7px; font-size:14px; opacity:.55}
-  .pl-chip .pl-del:hover{opacity:1}
-  .sound{position:relative}
-  .pl-num{position:absolute; top:6px; right:8px; min-width:18px; height:18px; padding:0 5px;
-          border-radius:9px; background:#fff; color:#161618; font-style:normal;
-          font-size:11px; font-weight:600; line-height:18px; text-align:center}
-  .sound.queued{opacity:.9; border-color:rgba(255,255,255,.14)}
-  .sound-mix[hidden]{display:none}
-  .mix-row{
-    display:flex; align-items:center; gap:12px; padding:8px 12px;
-    font-size:12.5px; letter-spacing:.2px;
-  }
-  .mix-row svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;
-               stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.9}
-  .mix-name{width:92px; flex-shrink:0; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .mix-row input{flex:1; min-width:0; accent-color:#fff; cursor:pointer}
-  .sound-vol{padding:8px 12px 6px}
 
   .clocks{
     display:flex; align-items:flex-start; gap:30px;
@@ -760,8 +902,6 @@
     .menu{bottom:max(10px, env(safe-area-inset-bottom)); max-height:75vh; background:rgba(22,22,24,.96)}
     .menu.photo-menu{max-width:none; width:auto; background:rgba(28,30,36,.4)}
     .pm-top, .pm-scroll{padding-left:18px; padding-right:18px}
-    .sound-panel{padding-left:12px; padding-right:12px}
-    .sound-grid{grid-template-columns:repeat(4, 1fr)}
   }
 </style>
 </head>
@@ -800,52 +940,120 @@
         </button>
         <div class="sound-panel" id="soundPanel" hidden role="dialog" aria-label="Sounds">
           <div class="sound-top">
-            <span class="sound-title">Sounds</span>
+            <h2 class="sound-title">Sounds</h2>
             <button class="sound-close" id="soundClose" type="button" title="Close (Esc)" aria-label="Close">
               <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
           </div>
-          <div class="sound-body" id="soundBody">
-          <div class="menu-head section-head">
-            <span>Nature sounds</span>
-            <div class="pager" id="pgNature" hidden></div>
+          <div class="sp-main">
+            <div class="sp-lib">
+              <section>
+                <div class="sp-head"><span class="sp-label">Nature sounds</span><span class="sp-count" id="layerCount"></span></div>
+                <div class="sound-grid" id="soundGrid"></div>
+              </section>
+              <section class="sp-music">
+                <div class="sp-head"><span class="sp-label">Spa music</span><div class="chips" id="musicCats"></div></div>
+                <p class="sp-hint">Tap a track to add it to Up next. Tap again to take it out.</p>
+                <div class="sound-grid" id="musicGrid"></div>
+              </section>
+            </div>
+
+            <aside class="sp-side">
+              <div class="np">
+                <div class="np-top">
+                  <div class="np-art" id="npArt"></div>
+                  <div class="np-info">
+                    <div class="np-kicker" id="npKicker">Now playing</div>
+                    <div class="np-title" id="npTitle"></div>
+                    <div class="np-sub" id="npSub"></div>
+                  </div>
+                </div>
+                <div class="np-bar"><i id="npProg"></i></div>
+                <div class="np-ctl">
+                  <button class="np-btn tg" id="npShuffle" type="button" title="Shuffle" aria-pressed="false">
+                    <svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+                  </button>
+                  <button class="np-btn" id="npPrev" type="button" title="Previous track">
+                    <svg viewBox="0 0 24 24"><path d="M18 6v12l-9-6z"/><path d="M6 5v14"/></svg>
+                  </button>
+                  <button class="np-btn np-play" id="npPlay" type="button" title="Play"></button>
+                  <button class="np-btn" id="npNext" type="button" title="Next track">
+                    <svg viewBox="0 0 24 24"><path d="M6 6v12l9-6z"/><path d="M18 5v14"/></svg>
+                  </button>
+                  <button class="np-btn tg" id="npRepeat" type="button" title="Repeat Up next" aria-pressed="true">
+                    <svg viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>
+                  </button>
+                </div>
+                <div class="np-sep"></div>
+                <div class="np-row">
+                  <span id="xfadeLabel">Crossfade between tracks</span>
+                  <button class="switch" id="npXfade" type="button" role="switch" aria-checked="true" aria-labelledby="xfadeLabel"></button>
+                </div>
+                <div class="np-sleep">Sleep timer <span>· fades everything out</span></div>
+                <div class="chips" id="sleepChips"></div>
+
+                <div class="np-tabs" role="tablist">
+                  <button class="np-tab" id="tabQueue" type="button" role="tab" aria-controls="paneQueue"></button>
+                  <button class="np-tab" id="tabMixes" type="button" role="tab" aria-controls="paneMixes"></button>
+                  <button class="np-tab" id="tabAlarm" type="button" role="tab" aria-controls="paneAlarm">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 1.5"/><path d="M4 5l3-2.5M20 5l-3-2.5"/></svg>
+                    <span>Alarm</span>
+                  </button>
+                </div>
+
+                <div class="np-pane" id="paneQueue" role="tabpanel">
+                  <div id="qList"></div>
+                  <div class="q-foot"><button class="linkbtn" id="qClear" type="button">Clear queue</button></div>
+                  <form class="save-box" id="mixForm">
+                    <label for="mixName">Save tracks and nature layers as a mix</label>
+                    <div class="save-row">
+                      <input class="input" id="mixName" type="text" maxlength="40" autocomplete="off" enterkeyhint="done">
+                      <button class="btn-white" id="mixSave" type="submit">Save</button>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="np-pane" id="paneMixes" role="tabpanel" hidden>
+                  <div id="mxList"></div>
+                </div>
+
+                <div class="np-pane" id="paneAlarm" role="tabpanel" hidden>
+                  <div id="alList"></div>
+                  <form class="al-form" id="alForm" hidden>
+                    <div class="al-field"><label for="alTime">Time</label>
+                      <input class="input al-time-in" id="alTime" type="time" required></div>
+                    <div class="al-field"><label for="alLabel">Label</label>
+                      <input class="input" id="alLabel" type="text" maxlength="30" placeholder="Alarm" autocomplete="off"></div>
+                    <div class="al-field"><span class="al-lab">Repeat</span>
+                      <div class="al-days" id="alDays"></div><small id="alDaysText"></small></div>
+                    <div class="al-field"><label for="alMix">Wake up to</label>
+                      <select class="input" id="alMix"></select></div>
+                    <div class="al-field" id="alVolBox"><label for="alVol">Volume rises to <b id="alVolText"></b></label>
+                      <input class="sl" id="alVol" type="range" min="10" max="100" step="5"></div>
+                    <div class="al-field" id="alRiseBox"><span class="al-lab">Over</span>
+                      <div class="chips" id="alRise"></div></div>
+                    <div class="al-btns">
+                      <button class="btn-white" type="submit">Save alarm</button>
+                      <button class="btn-ghost" id="alCancel" type="button">Cancel</button>
+                      <button class="linkbtn danger" id="alDelete" type="button">Delete</button>
+                    </div>
+                    <button class="linkbtn" id="alTest" type="button" style="align-self:flex-start; padding-left:0">Try it now</button>
+                  </form>
+                </div>
+              </div>
+            </aside>
           </div>
-          <div class="sound-grid" id="soundGrid"></div>
-          <div class="menu-head sound-subhead music-head">
-            <span>Spa music</span>
-            <button class="pl-mode" id="plMode" type="button" aria-pressed="false"
-                    title="Play spa music one track after another instead of together">
-              <svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h7M4 6h.01M4 12h.01M4 18h.01"/></svg>
-              <span>Playlist</span>
-            </button>
-            <div class="pager" id="pgMusic" hidden></div>
-          </div>
-          <div class="pl-bar" id="plBar" hidden>
-            <button class="pl-btn" id="plPlay" type="button" title="Play"></button>
-            <button class="pl-btn" id="plNext" type="button" title="Next track">
-              <svg viewBox="0 0 24 24"><path class="fill" d="M5 5l10 7-10 7z"/><path d="M19 5v14"/></svg>
-            </button>
-            <span class="pl-now" id="plNow"></span>
-            <form class="pl-name" id="plNameForm" hidden>
-              <input id="plNameInput" type="text" maxlength="40" placeholder="Name this playlist" autocomplete="off" enterkeyhint="done">
-              <button class="pl-save-go" type="submit">Save</button>
-              <button class="pl-clear" id="plNameCancel" type="button">Cancel</button>
-            </form>
-            <button class="pl-clear" id="plSaveBtn" type="button" title="Save these tracks and the sounds playing with them">Save</button>
-            <button class="pl-clear" id="plClear" type="button">Clear</button>
-          </div>
-          <div class="pl-saved" id="plSaved" hidden></div>
-          <div class="sound-grid" id="musicGrid"></div>
-          </div>
+
           <!-- pinned to the bottom of the panel so the sliders stay in view -->
           <div class="sound-foot">
             <div class="sound-err" id="soundErr" hidden></div>
+            <div class="mix-head"><span class="sp-label">Mix</span><span>Each sound and the music keep their own level. All sets the overall.</span></div>
             <div class="sound-mix" id="soundMix" hidden></div>
-            <div class="menu-sep"></div>
+            <div class="mix-empty" id="mixEmpty">Turn on a nature sound or start Up next to set its level here.</div>
             <div class="sound-vol mix-row" title="Volume for all sounds">
               <svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/><path d="M19 6.5a7.5 7.5 0 0 1 0 11"/></svg>
               <span class="mix-name">All</span>
-              <input type="range" id="soundVol" min="0" max="100" aria-label="Volume">
+              <input class="sl" type="range" id="soundVol" min="0" max="100" aria-label="Volume">
             </div>
           </div>
         </div>
@@ -930,8 +1138,33 @@
   <div class="hint">Enter to search · Esc to close</div>
 </div>
 
+<div class="alarm-screen" id="alarmScreen" hidden role="alertdialog" aria-label="Alarm">
+  <div class="as-inner">
+    <div class="as-kicker" id="asLabel">Alarm</div>
+    <div class="as-time"><span id="asTime"></span><span class="as-ampm" id="asAmpm"></span></div>
+    <div class="as-greet" id="asGreet"></div>
+    <div class="as-card">
+      <div class="as-top">
+        <div class="np-art" id="asArt"></div>
+        <div><div class="as-name" id="asName"></div><div class="as-sub" id="asSub"></div></div>
+      </div>
+      <div class="np-bar" id="asBar"><i id="asProg"></i></div>
+      <div class="as-vol" id="asVol"></div>
+      <button class="btn-white as-start" id="asStart" type="button" hidden>Tap to start the sound</button>
+    </div>
+    <div class="as-actions">
+      <button class="as-btn as-snooze" id="asSnooze" type="button">Snooze 9 min</button>
+      <button class="as-btn as-stop" id="asStop" type="button">Stop alarm</button>
+      <button class="as-link" id="asKeep" type="button">Stop the alarm, keep the mix playing</button>
+      <button class="as-link" id="asBack" type="button">Back to Sounds</button>
+    </div>
+  </div>
+</div>
+
 <script src="fetch-photos.js"></script>
 <script src="prefs.js"></script>
+<!-- your own sounds, kept out of git (see custom-sounds.js); fine if missing -->
+<script src="sounds/custom/custom-sounds.js" onerror="this.remove()"></script>
 
 <script>
 (function(){
@@ -2124,8 +2357,9 @@
     }
   }
 
+  var alarmKeepAlive = function(){ return false; };   // set by the alarms in initSounds
   function wakeAudio(){
-    if(!Object.keys(mixes).length) return;
+    if(!Object.keys(mixes).length && !alarmKeepAlive()) return;
     holdMediaSession(true);   // a call or Siri can pause it
     if(audio && audio.state !== "running") audio.resume();
   }
@@ -2202,236 +2436,178 @@
     s.stop(t + attack + decay + .05);
   }
 
-  /* Each sound gets `a` with:
-       a.out            where to connect (fades in/out on toggle)
-       a.keep(node)     looping source to stop when toggled off
-       a.every(min, max, fn, first)  repeat fn at random intervals (ms);
-                        if fn returns a number, that's the next delay */
-  var SOUNDS = [
-    { id:"rain", label:"Rain",
-      icon:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M8 16.5l-1 2.5M12 16.5l-1 2.5M16 16.5l-1 2.5"/>',
-      file:"sounds/rain.m4a" },
-    { id:"thunder", label:"Thunder",
-      icon:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M12.5 14l-2 3.5h3l-2 3.5"/>',
-      file:"sounds/thunder.m4a" },
-    { id:"wind", label:"Wind",
-      icon:'<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h6"/>',
-      file:"sounds/wind2.m4a" },
-    { id:"breeze", label:"Breeze",
-      icon:'<path d="M5 19c0-8 5-14 15-14 0 9-6 14-13 14"/><path d="M5 19c3-4 6-7 10-9"/>',
-      file:"sounds/wind.m4a" },
-    { id:"stream", label:"Stream",
-      icon:'<path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
-      file:"sounds/stream.m4a" },
-    { id:"fire", label:"Fire",
-      icon:'<path d="M12 21c-3.5 0-6-2.4-6-5.6 0-3.7 3-5.4 3.5-9.4 2 1.3 3 3 3.2 4.8 1-.8 1.6-2 1.8-3.3 2 1.8 3.5 4.3 3.5 7.6 0 3.4-2.5 5.9-6 5.9z"/><path d="M12 21a2.5 2.5 0 0 1-2.5-2.5c0-1.6 1.5-2.4 2.5-4 1 1.6 2.5 2.4 2.5 4A2.5 2.5 0 0 1 12 21z"/>',
-      file:"sounds/fire.m4a" },
-    { id:"birds", label:"Forest",
-      icon:'<path d="M12 3l-5 7h3l-4 6h12l-4-6h3z"/><path d="M12 16v5"/>',
-      file:"sounds/birds.m4a" },
-    { id:"crickets", label:"Crickets",
-      icon:'<path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6 6 0 0 0 9.5 9.5z"/><path d="M17 3.5v2M16 4.5h2"/>',
-      file:"sounds/crickets.m4a" },
-    { id:"gulls", label:"Seagulls",
-      icon:'<path d="M2 10c2.7-2.7 7-2.7 10 0 3-2.7 7.3-2.7 10 0"/><path d="M8 16.5c1.4-1.4 3.6-1.4 5 0 1.4-1.4 3.6-1.4 5 0"/>',
-      file:"sounds/gulls.m4a" },
-    { id:"beach", label:"Beach",
-      icon:'<path d="M3 12a9 9 0 0 1 18 0H3z"/><path d="M12 12l2.5 8"/><path d="M3 20h18"/>',
-      file:"sounds/beach.m4a" },
-    { id:"ocean", label:"Ocean",
-      icon:'<path d="M3 12c0-4 3.5-7 8-7 3 0 5 2 5 4.5 0 1.8-1.4 3-3 3-1.3 0-2.2-.9-2.2-2"/><path d="M2 16c2 0 2.5-1.5 5-1.5S9.5 16 12 16s3-1.5 5-1.5 3 1.5 5 1.5"/><path d="M2 20c2 0 2.5-1.5 5-1.5S9.5 20 12 20s3-1.5 5-1.5 3 1.5 5 1.5"/>',
-      file:"sounds/ocean.m4a" },
-    { id:"train", label:"Train",
-      icon:'<rect x="6" y="3" width="12" height="13" rx="3"/><path d="M6 9.5h12"/><path d="M9.5 13h.01M14.5 13h.01"/><path d="M8.5 16l-2 4.5M15.5 16l2 4.5"/>',
-      file:"sounds/train.m4a" },
-    { id:"heartbeat", label:"Heartbeat",
-      icon:'<path d="M2 12h4.5l2-5 3.5 10 2.5-5H22"/>',
-      file:"sounds/heartbeat.m4a" },
-    { id:"space", label:"Space",
-      icon:'<circle cx="12" cy="12" r="5"/><path d="M4.5 15.5c-2 2-2.3 3.7-1.3 4.3 1.8 1 7.4-1.8 11.8-6.2s7.2-10 6.2-11.8c-.6-1-2.3-.7-4.3 1.3"/>',
-      file:"sounds/space.m4a" },
-    { id:"frost", label:"Frost",
-      icon:'<path d="M12 2v20M3.4 7l17.2 10M3.4 17L20.6 7"/><path d="M9.5 4L12 6.5 14.5 4M9.5 20L12 17.5 14.5 20"/>',
-      file:"sounds/frost.m4a" },
-    { id:"campfire", label:"Campfire",
-      icon:'<path d="M12 15.5c-2 0-3.5-1.4-3.5-3.3 0-2 1.6-3 1.9-5.2 1.1.7 1.7 1.7 1.8 2.7.6-.5.9-1.1 1-1.8 1.1 1 1.8 2.3 1.8 4.1 0 1.9-1.4 3.5-3 3.5z"/><path d="M5 20.5l14-3M5 17.5l14 3"/>',
-      file:"sounds/campfire.m4a" },
-    { id:"lightrain", label:"Light rain",
-      icon:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M9 17v1.5M15 17v1.5M12 19.5V21"/>',
-      file:"sounds/lightrain.m4a" },
-    { id:"windowrain", label:"Window",
-      icon:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h16"/><path d="M8 6v2M16 7v1.5M8 15.5V17M16 15v2"/>',
-      file:"sounds/windowrain.m4a" },
-    { id:"clapping", label:"Clapping",
-      icon:'<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 5 14.5V11a1.5 1.5 0 0 1 2-1.4"/>',
-      file:"sounds/clapping.m4a" },
-    { id:"bbirds", label:"3D birds",
-      icon:'<path d="M3 12c3-1 5 0 7 2 1-4 4-7 9-7-1 5-4 9-9 10-3 .5-6-1-7-5z"/><path d="M15.5 9.5h.01"/>',
-      file:"sounds/binaural-birds.m4a" },
-    { id:"brain", label:"3D rain",
-      icon:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M8 16.5l-1 2.5M12 16.5l-1 2.5M16 16.5l-1 2.5"/>',
-      file:"sounds/binaural-rain.m4a" },
-    { id:"bbeach", label:"3D beach",
-      icon:'<path d="M3 12a9 9 0 0 1 18 0H3z"/><path d="M12 12l2.5 8"/><path d="M3 20h18"/>',
-      file:"sounds/binaural-beach.m4a" },
-    { id:"forest", label:"Quiet forest",
-      icon:'<path d="M8 3l-4 7h2.5L3 16h10l-3.5-6H12z"/><path d="M8 16v5"/><path d="M16 6l-3 5h2l-2.5 4.5h7L17 11h2z"/><path d="M16 15.5V21"/>',
-      file:"sounds/forest.m4a" },
-    { id:"river", label:"River",
-      icon:'<path d="M3 8c3-2 6 2 9 0s6-2 9 0"/><path d="M3 13c3-2 6 2 9 0s6-2 9 0"/><path d="M3 18c3-2 6 2 9 0s6-2 9 0"/>',
-      file:"sounds/river.m4a" },
-    { id:"clapping2", label:"Clapping II",
-      icon:'<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 5 14.5V11a1.5 1.5 0 0 1 2-1.4"/>',
-      file:"sounds/clapping2.m4a" },
+  /* Tile icons, by name. Custom sounds (sounds/custom/custom-sounds.js) pick
+     one by name too. */
+  var ICON = {
+    rain:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M8 16.5l-1 2.5M12 16.5l-1 2.5M16 16.5l-1 2.5"/>',
+    thunder:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M12.5 14l-2 3.5h3l-2 3.5"/>',
+    lightrain:'<path d="M7 13h10a3.5 3.5 0 0 0 .4-6.98A5.5 5.5 0 0 0 6.6 7.1 3 3 0 0 0 7 13z"/><path d="M9 17v1.5M15 17v1.5M12 19.5V21"/>',
+    wind:'<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h6"/>',
+    leaf:'<path d="M5 19c0-8 5-14 15-14 0 9-6 14-13 14"/><path d="M5 19c3-4 6-7 10-9"/>',
+    drop:'<path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>',
+    fire:'<path d="M12 21c-3.5 0-6-2.4-6-5.6 0-3.7 3-5.4 3.5-9.4 2 1.3 3 3 3.2 4.8 1-.8 1.6-2 1.8-3.3 2 1.8 3.5 4.3 3.5 7.6 0 3.4-2.5 5.9-6 5.9z"/><path d="M12 21a2.5 2.5 0 0 1-2.5-2.5c0-1.6 1.5-2.4 2.5-4 1 1.6 2.5 2.4 2.5 4A2.5 2.5 0 0 1 12 21z"/>',
+    campfire:'<path d="M12 15.5c-2 0-3.5-1.4-3.5-3.3 0-2 1.6-3 1.9-5.2 1.1.7 1.7 1.7 1.8 2.7.6-.5.9-1.1 1-1.8 1.1 1 1.8 2.3 1.8 4.1 0 1.9-1.4 3.5-3 3.5z"/><path d="M5 20.5l14-3M5 17.5l14 3"/>',
+    tree:'<path d="M12 3l-5 7h3l-4 6h12l-4-6h3z"/><path d="M12 16v5"/>',
+    trees:'<path d="M8 3l-4 7h2.5L3 16h10l-3.5-6H12z"/><path d="M8 16v5"/><path d="M16 6l-3 5h2l-2.5 4.5h7L17 11h2z"/><path d="M16 15.5V21"/>',
+    moon:'<path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6 6 0 0 0 9.5 9.5z"/><path d="M17 3.5v2M16 4.5h2"/>',
+    gulls:'<path d="M2 10c2.7-2.7 7-2.7 10 0 3-2.7 7.3-2.7 10 0"/><path d="M8 16.5c1.4-1.4 3.6-1.4 5 0 1.4-1.4 3.6-1.4 5 0"/>',
+    bird:'<path d="M3 12c3-1 5 0 7 2 1-4 4-7 9-7-1 5-4 9-9 10-3 .5-6-1-7-5z"/><path d="M15.5 9.5h.01"/>',
+    beach:'<path d="M3 12a9 9 0 0 1 18 0H3z"/><path d="M12 12l2.5 8"/><path d="M3 20h18"/>',
+    ocean:'<path d="M3 12c0-4 3.5-7 8-7 3 0 5 2 5 4.5 0 1.8-1.4 3-3 3-1.3 0-2.2-.9-2.2-2"/><path d="M2 16c2 0 2.5-1.5 5-1.5S9.5 16 12 16s3-1.5 5-1.5 3 1.5 5 1.5"/><path d="M2 20c2 0 2.5-1.5 5-1.5S9.5 20 12 20s3-1.5 5-1.5 3 1.5 5 1.5"/>',
+    river:'<path d="M3 8c3-2 6 2 9 0s6-2 9 0"/><path d="M3 13c3-2 6 2 9 0s6-2 9 0"/><path d="M3 18c3-2 6 2 9 0s6-2 9 0"/>',
+    waterfall:'<path d="M4 4h16"/><path d="M7 4v9M12 4v12M17 4v9"/><path d="M3 19c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"/>',
+    mountain:'<path d="M3 20l6-10 4 6 3-4 5 8z"/><path d="M7.5 12.5l1.5-2.5 1.5 2"/>',
+    train:'<rect x="6" y="3" width="12" height="13" rx="3"/><path d="M6 9.5h12"/><path d="M9.5 13h.01M14.5 13h.01"/><path d="M8.5 16l-2 4.5M15.5 16l2 4.5"/>',
+    heartbeat:'<path d="M2 12h4.5l2-5 3.5 10 2.5-5H22"/>',
+    space:'<circle cx="12" cy="12" r="5"/><path d="M4.5 15.5c-2 2-2.3 3.7-1.3 4.3 1.8 1 7.4-1.8 11.8-6.2s7.2-10 6.2-11.8c-.6-1-2.3-.7-4.3 1.3"/>',
+    frost:'<path d="M12 2v20M3.4 7l17.2 10M3.4 17L20.6 7"/><path d="M9.5 4L12 6.5 14.5 4M9.5 20L12 17.5 14.5 20"/>',
+    window:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h16"/><path d="M8 6v2M16 7v1.5M8 15.5V17M16 15v2"/>',
+    clap:'<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 12V8.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5A6.5 6.5 0 0 1 5 14.5V11a1.5 1.5 0 0 1 2-1.4"/>',
+    piano:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
+    guitar:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
+    flute:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
+    handpan:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
+    note:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+    bowl:'<path d="M4 10h16a8 8 0 0 1-16 0z"/><path d="M9.5 20.5h5"/><path d="M10 6.5c.8-1 .8-2 0-3M14 6.5c.8-1 .8-2 0-3"/>',
+    tibetan:'<path d="M4 12h16a8 8 0 0 1-16 0z"/><path d="M9.5 22h5"/><path d="M15 9l5-6"/>',
+    chimes:'<path d="M4 3h16M7 3v3M12 3v3M17 3v3"/><rect x="5.5" y="6" width="3" height="9" rx="1.2"/><rect x="10.5" y="6" width="3" height="12" rx="1.2"/><rect x="15.5" y="6" width="3" height="7" rx="1.2"/>',
+    lotus:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
+    stones:'<ellipse cx="12" cy="18" rx="7" ry="2.5"/><ellipse cx="12" cy="12.5" rx="5" ry="2"/><ellipse cx="12" cy="7.5" rx="3" ry="1.6"/>',
+    sun:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M6.3 17.7l2.5-2.5M15.2 8.8l2.5-2.5"/>',
+    wave:'<path d="M2 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/>',
+    dream:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3v3M15.5 4.5h3"/>',
+    magic:'<path d="M11 3l1.8 4.7 4.7 1.8-4.7 1.8L11 16l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18.5 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+    wintertree:'<path d="M12 3l-5 7h3l-4 6h12l-4-6h3z"/><path d="M12 16v5"/><path d="M4 5h.01M20 7h.01M18 3h.01"/>',
+    autumn:'<path d="M12 21v-6"/><path d="M12 15l-6-2 1.5-2L4 8l3.5-.5L7 4l3 2 2-3 2 3 3-2-.5 3.5L20 8l-3.5 3L18 13z"/>',
+    lake:'<path d="M3 17c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"/><path d="M5 13l4-6 3 4 2-2 5 4"/>',
+    lamp:'<path d="M9 3h6l1 4H8z"/><path d="M8 7h8l-1.5 7h-5z"/><path d="M12 14v3M9.5 20h5"/>'
+  };
 
-    // ---- spa music (your recordings from sounds/customsounds; these start
-    // from the top instead of a random spot)
-    { id:"piano", label:"Piano", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano.m4a" },
-    { id:"piano2", label:"Piano II", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano2.m4a" },
-    { id:"piano3", label:"Piano III", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano3.m4a" },
-    { id:"piano4", label:"Piano IV", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano4.m4a" },
-    { id:"piano5", label:"Piano V", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano5.m4a" },
-    { id:"piano6", label:"Piano VI", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano6.m4a" },
-    { id:"piano7", label:"Piano VII", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano7.m4a" },
-    { id:"piano8", label:"Piano VIII", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano8.m4a" },
-    { id:"piano9", label:"Piano IX", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano9.m4a" },
-    { id:"piano10", label:"Piano X", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano10.m4a" },
-    { id:"piano11", label:"Piano XI", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano11.m4a" },
-    { id:"piano12", label:"Piano XII", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano12.m4a" },
-    { id:"piano13", label:"Piano XIII", group:"music",
-      icon:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 13v7M12 13v7M16 13v7"/><path d="M7 4v9h2V4M11 4v9h2V4M15 4v9h2V4"/>',
-      file:"sounds/piano13.m4a" },
-    { id:"flute", label:"Flute", group:"music",
-      icon:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
-      file:"sounds/flute.m4a" },
-    { id:"flute2", label:"Flute II", group:"music",
-      icon:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
-      file:"sounds/flute2.m4a" },
-    { id:"flute3", label:"Flute III", group:"music",
-      icon:'<path d="M3 19L19 3l2 2L5 21z"/><path d="M9 15h.01M12 12h.01M15 9h.01"/>',
-      file:"sounds/flute3.m4a" },
-    { id:"guitar1", label:"Guitar", group:"music",
-      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
-      file:"sounds/guitar1.m4a" },
-    { id:"guitar2", label:"Guitar II", group:"music",
-      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
-      file:"sounds/guitar2.m4a" },
-    { id:"guitar4", label:"Guitar IV", group:"music",
-      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
-      file:"sounds/guitar4.m4a" },
-    { id:"acoustic", label:"Acoustic", group:"music",
-      icon:'<circle cx="9" cy="15" r="5.5"/><circle cx="9" cy="15" r="1.6"/><path d="M12.9 11.1L19 5"/><path d="M17.5 3.5l3 3"/>',
-      file:"sounds/acoustic.m4a" },
-    { id:"handpan", label:"Handpan", group:"music",
-      icon:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
-      file:"sounds/handpan.m4a" },
-    { id:"handpan2", label:"Handpan II", group:"music",
-      icon:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
-      file:"sounds/handpan2.m4a" },
-    { id:"handpan4", label:"Handpan IV", group:"music",
-      icon:'<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="10.5" rx="2.5" ry="1"/><path d="M6.5 11.5h.01M17.5 11.5h.01M9 14h.01M15 14h.01"/>',
-      file:"sounds/handpan4.m4a" },
-    { id:"jazz", label:"Jazz", group:"music",
-      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz.m4a" },
-    { id:"jazz2", label:"Jazz II", group:"music",
-      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz2.m4a" },
-    { id:"jazz4", label:"Jazz IV", group:"music",
-      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz4.m4a" },
-    { id:"jazz5", label:"Jazz V", group:"music",
-      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz5.m4a" },
-    { id:"jazz6", label:"Jazz VI", group:"music",
-      icon:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
-      file:"sounds/jazz6.m4a" },
-    { id:"bowls", label:"Bowls", group:"music",
-      icon:'<path d="M4 10h16a8 8 0 0 1-16 0z"/><path d="M9.5 20.5h5"/><path d="M10 6.5c.8-1 .8-2 0-3M14 6.5c.8-1 .8-2 0-3"/>',
-      file:"sounds/bowls.m4a" },
-    { id:"singingbowls", label:"Singing bowls", group:"music",
-      icon:'<path d="M4 10h16a8 8 0 0 1-16 0z"/><path d="M9.5 20.5h5"/><path d="M10 6.5c.8-1 .8-2 0-3M14 6.5c.8-1 .8-2 0-3"/>',
-      file:"sounds/singingbowls.m4a" },
-    { id:"tibetan", label:"Tibetan", group:"music",
-      icon:'<path d="M4 12h16a8 8 0 0 1-16 0z"/><path d="M9.5 22h5"/><path d="M15 9l5-6"/>',
-      file:"sounds/tibetan.m4a" },
-    { id:"chimes", label:"Chimes", group:"music",
-      icon:'<path d="M4 3h16M7 3v3M12 3v3M17 3v3"/><rect x="5.5" y="6" width="3" height="9" rx="1.2"/><rect x="10.5" y="6" width="3" height="12" rx="1.2"/><rect x="15.5" y="6" width="3" height="7" rx="1.2"/>',
-      file:"sounds/chimes.m4a" },
-    { id:"spa2", label:"Spa II", group:"music",
-      icon:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
-      file:"sounds/spa2.m4a" },
-    { id:"spa3", label:"Spa III", group:"music",
-      icon:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
-      file:"sounds/spa3.m4a" },
-    { id:"spa7", label:"Meditation", group:"music",
-      icon:'<path d="M12 20c-2.5-2.5-3-6.5 0-11 3 4.5 2.5 8.5 0 11z"/><path d="M12 20c-3.5 0-7.5-2-8.5-6.5 3.5-.5 6.5 1.5 8.5 6.5z"/><path d="M12 20c3.5 0 7.5-2 8.5-6.5-3.5-.5-6.5 1.5-8.5 6.5z"/>',
-      file:"sounds/spa7.m4a" },
-    { id:"tranquility", label:"Tranquility", group:"music",
-      icon:'<ellipse cx="12" cy="18" rx="7" ry="2.5"/><ellipse cx="12" cy="12.5" rx="5" ry="2"/><ellipse cx="12" cy="7.5" rx="3" ry="1.6"/>',
-      file:"sounds/tranquility.m4a" },
-    { id:"ambient", label:"Ambient", group:"music",
-      icon:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M6.3 17.7l2.5-2.5M15.2 8.8l2.5-2.5"/>',
-      file:"sounds/ambient.m4a" },
-    { id:"theta", label:"Theta", group:"music",
-      icon:'<path d="M2 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/>',
-      file:"sounds/theta.m4a" },
-    { id:"dreamy", label:"Dreamy", group:"music",
-      icon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3v3M15.5 4.5h3"/>',
-      file:"sounds/dreamy.m4a" },
-    { id:"magic", label:"Magic", group:"music",
-      icon:'<path d="M11 3l1.8 4.7 4.7 1.8-4.7 1.8L11 16l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18.5 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
-      file:"sounds/magic.m4a" },
-    { id:"snowfall", label:"Snowfall", group:"music",
-      icon:'<path d="M12 2v20M3.4 7l17.2 10M3.4 17L20.6 7"/><path d="M9.5 4L12 6.5 14.5 4M9.5 20L12 17.5 14.5 20"/>',
-      file:"sounds/snowfall.m4a" },
-    { id:"winter", label:"Winter", group:"music",
-      icon:'<path d="M12 3l-5 7h3l-4 6h12l-4-6h3z"/><path d="M12 16v5"/><path d="M4 5h.01M20 7h.01M18 3h.01"/>',
-      file:"sounds/winter.m4a" },
-    { id:"thanksgiving", label:"Thanksgiving", group:"music",
-      icon:'<path d="M12 21v-6"/><path d="M12 15l-6-2 1.5-2L4 8l3.5-.5L7 4l3 2 2-3 2 3 3-2-.5 3.5L20 8l-3.5 3L18 13z"/>',
-      file:"sounds/thanksgiving.m4a" },
-    { id:"lakemarie", label:"Lake Marie", group:"music",
-      icon:'<path d="M3 17c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"/><path d="M5 13l4-6 3 4 2-2 5 4"/>',
-      file:"sounds/lakemarie.m4a" },
-    { id:"porchlight", label:"Porch light", group:"music",
-      icon:'<path d="M9 3h6l1 4H8z"/><path d="M8 7h8l-1.5 7h-5z"/><path d="M12 14v3M9.5 20h5"/>',
-      file:"sounds/porchlight.m4a" }
-  ];
+  /* Recordings in sounds/ (credits in sounds/CREDITS.txt). Nature sounds
+     layer; spa music (group "music") plays one track at a time from Up next. */
+  var SOUNDS = [
+    { id:"rain", label:"Rain", icon:"rain", file:"rain" },
+    { id:"thunder", label:"Thunder", icon:"thunder", file:"thunder" },
+    { id:"wind", label:"Wind", icon:"wind", file:"wind2" },
+    { id:"breeze", label:"Breeze", icon:"leaf", file:"wind" },
+    { id:"stream", label:"Stream", icon:"drop", file:"stream" },
+    { id:"fire", label:"Fire", icon:"fire", file:"fire" },
+    { id:"birds", label:"Forest", icon:"tree", file:"birds" },
+    { id:"crickets", label:"Crickets", icon:"moon", file:"crickets" },
+    { id:"gulls", label:"Seagulls", icon:"gulls", file:"gulls" },
+    { id:"beach", label:"Beach", icon:"beach", file:"beach" },
+    { id:"ocean", label:"Ocean", icon:"ocean", file:"ocean" },
+    { id:"train", label:"Train", icon:"train", file:"train" },
+    { id:"heartbeat", label:"Heartbeat", icon:"heartbeat", file:"heartbeat" },
+    { id:"space", label:"Space", icon:"space", file:"space" },
+    { id:"frost", label:"Frost", icon:"frost", file:"frost" },
+    { id:"campfire", label:"Campfire", icon:"campfire", file:"campfire" },
+    { id:"lightrain", label:"Light rain", icon:"lightrain", file:"lightrain" },
+    { id:"windowrain", label:"Window", icon:"window", file:"windowrain" },
+    { id:"clapping", label:"Clapping", icon:"clap", file:"clapping" },
+    { id:"bbirds", label:"3D birds", icon:"bird", file:"binaural-birds" },
+    { id:"brain", label:"3D rain", icon:"rain", file:"binaural-rain" },
+    { id:"bbeach", label:"3D beach", icon:"beach", file:"binaural-beach" },
+    { id:"forest", label:"Quiet forest", icon:"trees", file:"forest" },
+    { id:"river", label:"River", icon:"river", file:"river" },
+    { id:"clapping2", label:"Clapping II", icon:"clap", file:"clapping2" },
+    { id:"bowls", label:"Bowls", icon:"bowl", file:"bowls" },
+    { id:"singingbowls", label:"Singing bowls", icon:"bowl", file:"singingbowls" },
+    { id:"tibetan", label:"Tibetan", icon:"tibetan", file:"tibetan" },
+    { id:"chimes", label:"Chimes", icon:"chimes", file:"chimes" },
+
+    { id:"piano", label:"Piano", group:"music", cat:"Piano", icon:"piano", file:"piano" }
+  ].concat(["II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII"].map(function(n, i){
+    return { id:"piano" + (i + 2), label:"Piano " + n, group:"music", cat:"Piano", icon:"piano", file:"piano" + (i + 2) };
+  })).concat([
+    { id:"guitar1", label:"Guitar", group:"music", cat:"Guitar", icon:"guitar", file:"guitar1" },
+    { id:"guitar2", label:"Guitar II", group:"music", cat:"Guitar", icon:"guitar", file:"guitar2" },
+    { id:"guitar4", label:"Guitar IV", group:"music", cat:"Guitar", icon:"guitar", file:"guitar4" },
+    { id:"acoustic", label:"Acoustic", group:"music", cat:"Guitar", icon:"guitar", file:"acoustic" },
+    { id:"flute", label:"Flute", group:"music", cat:"Flute", icon:"flute", file:"flute" },
+    { id:"flute2", label:"Flute II", group:"music", cat:"Flute", icon:"flute", file:"flute2" },
+    { id:"flute3", label:"Flute III", group:"music", cat:"Flute", icon:"flute", file:"flute3" },
+    { id:"handpan", label:"Handpan", group:"music", cat:"Handpan", icon:"handpan", file:"handpan" },
+    { id:"handpan2", label:"Handpan II", group:"music", cat:"Handpan", icon:"handpan", file:"handpan2" },
+    { id:"handpan4", label:"Handpan IV", group:"music", cat:"Handpan", icon:"handpan", file:"handpan4" },
+    { id:"jazz", label:"Jazz", group:"music", cat:"Jazz", icon:"note", file:"jazz" },
+    { id:"jazz2", label:"Jazz II", group:"music", cat:"Jazz", icon:"note", file:"jazz2" },
+    { id:"jazz4", label:"Jazz IV", group:"music", cat:"Jazz", icon:"note", file:"jazz4" },
+    { id:"jazz5", label:"Jazz V", group:"music", cat:"Jazz", icon:"note", file:"jazz5" },
+    { id:"jazz6", label:"Jazz VI", group:"music", cat:"Jazz", icon:"note", file:"jazz6" },
+    { id:"spa2", label:"Spa II", group:"music", cat:"Ambient", icon:"lotus", file:"spa2" },
+    { id:"spa3", label:"Spa III", group:"music", cat:"Ambient", icon:"lotus", file:"spa3" },
+    { id:"spa7", label:"Meditation", group:"music", cat:"Ambient", icon:"lotus", file:"spa7" },
+    { id:"tranquility", label:"Tranquility", group:"music", cat:"Ambient", icon:"stones", file:"tranquility" },
+    { id:"ambient", label:"Ambient", group:"music", cat:"Ambient", icon:"sun", file:"ambient" },
+    { id:"theta", label:"Theta", group:"music", cat:"Ambient", icon:"wave", file:"theta" },
+    { id:"dreamy", label:"Dreamy", group:"music", cat:"Ambient", icon:"dream", file:"dreamy" },
+    { id:"magic", label:"Magic", group:"music", cat:"Ambient", icon:"magic", file:"magic" },
+    { id:"snowfall", label:"Snowfall", group:"music", cat:"Seasonal", icon:"frost", file:"snowfall" },
+    { id:"winter", label:"Winter", group:"music", cat:"Seasonal", icon:"wintertree", file:"winter" },
+    { id:"thanksgiving", label:"Thanksgiving", group:"music", cat:"Seasonal", icon:"autumn", file:"thanksgiving" },
+    // licensed, not in the repo (see README): silent until you add the files
+    { id:"porchlight", label:"Porch light", group:"music", cat:"My music", icon:"lamp", file:"porchlight" }
+  ]);
+  SOUNDS.forEach(function(s){ s.icon = ICON[s.icon]; s.file = "sounds/" + s.file + ".m4a"; });
+
+  /* Your own sounds: sounds/custom/custom-sounds.js (kept out of git, made by
+     `node custom-sounds.js`) lists the files in sounds/custom/. Without it
+     there are simply no extra tiles. */
+  (function(){
+    var have = {};
+    SOUNDS.forEach(function(s){ have[s.id] = true; });
+    (Array.isArray(window.CUSTOM_SOUNDS) ? window.CUSTOM_SOUNDS : []).forEach(function(c){
+      if(!c || !c.id || !c.file || c.hidden) return;
+      var id = "my-" + c.id, music = c.group === "music";
+      if(have[id]) return;
+      have[id] = true;
+      SOUNDS.push({
+        id: id, label: c.label || c.id, artist: c.artist || "",
+        group: music ? "music" : undefined, cat: music ? (c.cat || "My music") : undefined,
+        icon: ICON[c.icon] || (music ? ICON.note : ICON.wave),
+        file: "sounds/custom/" + c.file
+      });
+    });
+    // custom music after the built-in tracks, custom nature sounds after the built-in ones
+    var nature = SOUNDS.filter(function(s){ return s.group !== "music"; });
+    SOUNDS = nature.concat(SOUNDS.filter(function(s){ return s.group === "music"; }));
+  })();
+
+  /* Overall loudness: the All slider, or the alarm's rising volume while it
+     rings, times the sleep timer's fade-out. */
+  var volHook = { alarm: null, fade: 1 };
+  function outVol(){ return (volHook.alarm != null ? volHook.alarm : soundVolume()) * volHook.fade; }
+  // a browser can refuse to start sound that no tap started (an alarm, say)
+  var onBlocked = null;
+  function playFailed(err){ if(err && err.name === "NotAllowedError" && onBlocked) onBlocked(); }
 
   // Recordings loop through two <audio> elements that cross-fade at the
   // seam, so the repeat has no gap or click. They stay out of Web Audio on
   // purpose: browsers silence file:// media routed into it.
   var LOOP_FADE = 3;   // seconds; shorter for very short recordings
+  // iPhone/iPad ignore volume on audio elements, so there levels, fades and
+  // cross-fades can't apply
+  var VOL_OK = (function(){ try{ var t = new Audio(); t.volume = .5; return t.volume === .5; }catch(e){ return false; } })();
+  // There a cross-fade is impossible, and a second copy started at the seam
+  // could fail to start and leave a short sound silent: one recording looping
+  // on its own keeps going instead.
+  function startLoopedSound(s){
+    var p = new Audio(s.file);
+    p.loop = true; p.preload = "auto"; p.setAttribute("playsinline", "");
+    p.addEventListener("loadedmetadata", function(){
+      if(isFinite(p.duration) && p.duration > LOOP_FADE * 4){ try{ p.currentTime = Math.random() * (p.duration - LOOP_FADE * 3); }catch(e){} }
+    }, {once:true});
+    var pr = p.play();
+    if(pr && pr.catch) pr.catch(playFailed);
+    playing[s.id] = function(){ p.pause(); p.removeAttribute("src"); p.load(); };
+  }
   function loopFade(d){ return isFinite(d) ? Math.min(LOOP_FADE, d / 4) : LOOP_FADE; }
   function startFileSound(s){
+    if(!VOL_OK) return startLoopedSound(s);
     var players = [new Audio(s.file), new Audio(s.file)], cur = 0;
-    var level = 0, target = 1, timer;
-    players.forEach(function(p){ p.preload = "auto"; p.volume = 0; p._from = 0; });
+    var level = 0, target = 1, timer, started = false;
+    players.forEach(function(p){ p.preload = "auto"; p.volume = 0; p._from = 0; p.setAttribute("playsinline", ""); });
 
     function begin(p, at){
       p._from = at;
@@ -2442,6 +2618,10 @@
     function tick(){
       level = target > level ? Math.min(target, level + .05) : Math.max(target, level - .06);
       var a = players[cur], b = players[1 - cur], dur = a.duration;
+      if(!a.paused) started = true;
+      // backstop: if both copies have stopped (a wrong duration, a refused
+      // start), pick the loop up again from the top rather than go silent
+      if(started && target > 0 && a.paused && b.paused){ begin(b, 0); cur = 1 - cur; return; }
       if(isFinite(dur) && b.paused && dur - a.currentTime <= loopFade(dur)){
         begin(b, 0);
         cur = 1 - cur;
@@ -2451,7 +2631,7 @@
         var d = p.duration, t = p.currentTime, fl = loopFade(d);
         var f = Math.min(1, (t - p._from) / fl);
         if(isFinite(d)) f = Math.min(f, (d - t) / fl);
-        p.volume = Math.max(0, Math.min(1, f * level * soundVolume() * soundLevel(s.id)));
+        p.volume = Math.max(0, Math.min(1, f * level * outVol() * soundLevel(s.id)));
         if(isFinite(d) && d - t < .05) p.pause();
       });
       if(target === 0 && level === 0){
@@ -2463,14 +2643,14 @@
     // start somewhere random in the recording, already at full loop level
     var first = players[0];
     first.addEventListener("loadedmetadata", function(){
-      if(s.group !== "music" && isFinite(first.duration) && first.duration > LOOP_FADE * 4){
+      if(isFinite(first.duration) && first.duration > LOOP_FADE * 4){
         try{ first.currentTime = Math.random() * (first.duration - LOOP_FADE * 3); }catch(e){}
       }
       first._from = first.currentTime - LOOP_FADE;
     }, {once:true});
     first._from = -LOOP_FADE;
     var pr = first.play();
-    if(pr && pr.catch) pr.catch(function(){});
+    if(pr && pr.catch) pr.catch(playFailed);
     timer = setInterval(tick, 50);
 
     playing[s.id] = function(){ target = 0; };
@@ -2509,7 +2689,7 @@
         nodes.forEach(function(n){ try{ n.stop(); }catch(e){} });
         out.disconnect(); mix.disconnect();
         if(mixes[s.id] === mix) delete mixes[s.id];
-        if(!Object.keys(mixes).length) holdMediaSession(false);
+        if(!Object.keys(mixes).length && !alarmKeepAlive()) holdMediaSession(false);
       }, 900);
     };
   }
@@ -2535,325 +2715,737 @@
   }
 
   function initSounds(){
-    var btn = $("soundBtn"), panel = $("soundPanel"), grid = $("soundGrid"), vol = $("soundVol");
-    var mixBox = $("soundMix"), soundErr = $("soundErr");
-
-    function renderBtn(){ btn.classList.toggle("playing", Object.keys(playing).length > 0 || pl.playing); }
-
-    // A volume slider for every sound that's on.
-    function renderMix(){
-      mixBox.innerHTML = "";
-      SOUNDS.forEach(function(s){
-        if(!playing[s.id]) return;
-        var row = document.createElement("label");
-        row.className = "mix-row";
-        row.innerHTML = '<svg viewBox="0 0 24 24">' + s.icon + '</svg><span class="mix-name">' + s.label + '</span>';
-        var r = document.createElement("input");
-        r.type = "range"; r.min = "0"; r.max = "100";
-        r.value = Math.round(soundLevel(s.id) * 100);
-        r.setAttribute("aria-label", s.label + " volume");
-        r.addEventListener("input", function(){ setSoundLevel(s.id, r.value / 100); });
-        row.appendChild(r);
-        mixBox.appendChild(row);
-      });
-      if(pl.cur){
-        var row = document.createElement("label"), s = soundById(pl.cur.id);
-        row.className = "mix-row";
-        row.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h7M4 6h.01M4 12h.01M4 18h.01"/></svg><span class="mix-name">Playlist</span>';
-        var r = document.createElement("input");
-        r.type = "range"; r.min = "0"; r.max = "100";
-        r.value = Math.round(soundLevel("playlist") * 100);
-        r.setAttribute("aria-label", "Playlist volume");
-        r.addEventListener("input", function(){ setSoundLevel("playlist", r.value / 100); });
-        row.appendChild(r);
-        mixBox.appendChild(row);
-      }
-      mixBox.hidden = !mixBox.children.length;
-      renderPages();
-      if(pl.mode && tiles.rain){
-        $("plSaveBtn").disabled = !canSave();
-        plRenderSaved();
-      }
-    }
-
-    /* ---- pages of tiles: as many rows as fit nicely, the rest on further
-       pages (arrows, dots, or swipe). Page size follows the panel's width. */
-    var pages = null;
-    function pageLayout(pg){
-      var els = pg.grid.children, n = els.length;
-      var cols = getComputedStyle(pg.grid).gridTemplateColumns.split(" ").filter(Boolean).length || 1;
-      var per = cols * pg.rows, count = Math.max(1, Math.ceil(n / per));
-      pg.count = count;
-      pg.at = Math.max(0, Math.min(pg.at, count - 1));
-      for(var i = 0; i < n; i++) els[i].classList.toggle("off-page", Math.floor(i / per) !== pg.at);
-      // same height on every page, so the panel doesn't jump on a short last page
-      var shown = els[pg.at * per];
-      pg.grid.style.minHeight = count > 1 && shown ? (pg.rows * shown.offsetHeight + (pg.rows - 1) * 6) + "px" : "";
-      pg.pager.hidden = count < 2;
-      if(count < 2){ pg.pager.innerHTML = ""; return; }
-      var html = '<button class="pg" type="button" data-d="-1" title="Previous page"' + (pg.at === 0 ? " disabled" : "") + '><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><span class="dots">';
-      for(var p = 0; p < count; p++){
-        var on = false;
-        for(var j = p * per; j < Math.min(n, (p + 1) * per); j++) if(els[j].classList.contains("on")) on = true;
-        html += '<button class="dot' + (p === pg.at ? " cur" : "") + (on ? " has-on" : "") + '" type="button" data-p="' + p + '" title="Page ' + (p + 1) + '"></button>';
-      }
-      html += '</span><button class="pg" type="button" data-d="1" title="Next page"' + (pg.at === count - 1 ? " disabled" : "") + '><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>';
-      pg.pager.innerHTML = html;
-    }
-    // as many rows per page as the screen holds, shared between the two sections;
-    // done when the panel opens (and on resize) so pages don't shift while tapping
-    function fitRows(){
-      if(!pages || panel.hidden) return;
-      var body = $("soundBody"), probe = pages[0].grid.querySelector(".sound:not(.off-page)") || pages[0].grid.firstElementChild;
-      if(!probe) return;
-      var th = probe.offsetHeight + 6;
-      var other = 0;   // headings, playlist bar: everything in the body except the tiles
-      [].forEach.call(body.children, function(el){
-        if(el === pages[0].grid || el === pages[1].grid) return;
-        var cs = getComputedStyle(el);
-        other += el.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
-      });
-      var R = Math.max(4, Math.floor((body.clientHeight - other - 8) / th));
-      var need = pages.map(function(pg){
-        var cols = getComputedStyle(pg.grid).gridTemplateColumns.split(" ").filter(Boolean).length || 1;
-        return Math.ceil(pg.grid.children.length / cols);
-      });
-      // nature sounds (the shorter list) on one page if possible, music gets the rest
-      var a = Math.min(need[0], Math.max(2, R - 2));
-      var b = Math.max(2, Math.min(need[1], R - a));
-      pages[0].rows = a; pages[1].rows = b;
-    }
-    function renderPages(){
-      if(!pages || panel.hidden) return;
-      pages.forEach(pageLayout);
-    }
-    function pageGo(pg, to){
-      to = Math.max(0, Math.min(to, (pg.count || 1) - 1));
-      if(to === pg.at) return;
-      var cls = to > pg.at ? "from-right" : "from-left";
-      pg.at = to;
-      pageLayout(pg);
-      pg.grid.classList.remove("from-right", "from-left");
-      void pg.grid.offsetWidth;
-      pg.grid.classList.add(cls);
-    }
-
-    /* ---- spa music playlist: tracks play one after another, in the order
-       they were tapped, then start over. Short loops repeat until they've
-       played about PL_TURN seconds so they don't flash by. */
-    var PL_TURN = 120;
+    var btn = $("soundBtn"), panel = $("soundPanel"), vol = $("soundVol");
+    var mixBox = $("soundMix"), soundErr = $("soundErr"), ringEl = $("alarmScreen");
     var tiles = {};
-    // iPhone/iPad ignore volume on audio elements; there tracks hand over at the end, no cross-fade
-    var volOK = (function(){ try{ var t = new Audio(); t.volume = .5; return t.volume === .5; }catch(e){ return false; } })();
-    var pl = { mode: store("pl_mode") === "1", list: [], at: 0, cur: null, playing: false };
-    try{ pl.list = JSON.parse(store("pl_list") || "[]") || []; }catch(e){ pl.list = []; }
-    pl.list = pl.list.filter(function(id){ var s = soundById(id); return s && s.group === "music"; });
+    // iPhone/iPad ignore volume on audio elements: there levels, fades and the
+    // alarm's rising volume can't apply, and tracks hand over without a cross-fade
+    var volOK = VOL_OK;
+    var I_PLAY = '<path class="fill" d="M8 5.5v13l11-6.5z"/>';
+    var I_PAUSE = '<path class="fill" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>';
+    var I_X = '<path d="M6 6l12 12M18 6L6 18"/>';
+    var I_UP = '<path d="M6 15l6-6 6 6"/>', I_DOWN = '<path d="M6 9l6 6 6-6"/>';
 
     function soundById(id){ for(var i = 0; i < SOUNDS.length; i++) if(SOUNDS[i].id === id) return SOUNDS[i]; return null; }
-    function plSave(){ store("pl_list", JSON.stringify(pl.list)); }
+    function isMusic(s){ return s.group === "music"; }
+    function svg(icon){ return '<svg viewBox="0 0 24 24">' + icon + '</svg>'; }
+    function esc(t){ return String(t == null ? "" : t).replace(/[&<>"]/g, function(c){ return "&#" + c.charCodeAt(0) + ";"; }); }
+    function trackSub(s){ return s.artist || s.cat || ""; }
+    function natureOn(){ return SOUNDS.filter(function(s){ return !isMusic(s) && playing[s.id]; }); }
+    function natureLevels(){ return natureOn().map(function(s){ return { id: s.id, level: soundLevel(s.id) }; }); }
+    function labelOf(id){ var s = soundById(id); return s ? s.label : ""; }
+    function pad2(n){ return (n < 10 ? "0" : "") + n; }
+    function clockText(h, m){ return { t: (h % 12 || 12) + ":" + pad2(m), ap: h < 12 ? "AM" : "PM" }; }
+    function pct(v){ return Math.round(v * 100) + "%"; }
+    function copy(x){ return JSON.parse(JSON.stringify(x)); }
+    function storedList(key){
+      try{ var l = JSON.parse(store(key) || "[]"); return Array.isArray(l) ? l : []; }catch(e){ return []; }
+    }
 
-    // saved playlists: [{name, ids}], newest first
-    function plSavedList(){
-      var l;
-      try{ l = JSON.parse(store("pl_saved") || "[]"); }catch(e){ l = []; }
-      return (Array.isArray(l) ? l : []).filter(function(x){ return x && x.name && Array.isArray(x.ids); });
+    function paintRange(r){
+      var min = +r.min || 0, max = +r.max || 100;
+      r.style.setProperty("--p", ((r.value - min) / (max - min) * 100) + "%");
     }
-    function plSavedStore(l){ store("pl_saved", JSON.stringify(l)); }
-    // the nature sounds on right now, with their levels: saved along with the tracks
-    function mixNow(){
-      return SOUNDS.filter(function(s){ return s.group !== "music" && playing[s.id]; })
-                   .map(function(s){ return { id: s.id, level: soundLevel(s.id) }; });
+    function slider(level, label, onInput){
+      var r = document.createElement("input");
+      r.type = "range"; r.min = "0"; r.max = "100"; r.className = "sl";
+      r.value = Math.round(level * 100);
+      r.setAttribute("aria-label", label);
+      paintRange(r);
+      r.addEventListener("input", function(){ paintRange(r); onInput(r.value / 100); });
+      return r;
     }
-    function mixKey(sounds){ return (sounds || []).map(function(x){ return x.id; }).sort().join(","); }
-    function canSave(){ return pl.list.length > 0 || mixNow().length > 0; }
-    function plSaveAs(name){
-      name = String(name || "").trim();
-      if(!name || !canSave()) return;
-      var l = plSavedList().filter(function(x){ return x.name.toLowerCase() !== name.toLowerCase(); });
-      l.unshift({ name: name, ids: pl.list.slice(), sounds: mixNow(), level: soundLevel("playlist") });
-      plSavedStore(l);
+
+    /* ---- nature sounds: tap to layer, each at its own level ---- */
+    function paintLevel(id){
+      var i = tiles[id] && tiles[id].querySelector(".lvl i");
+      if(i) i.style.width = Math.round(soundLevel(id) * 100) + "%";
     }
-    function plApply(saved){
-      // nature sounds: exactly the saved ones, at their saved levels
-      var want = {};
-      (saved.sounds || []).forEach(function(x){ var s = soundById(x.id); if(s && s.group !== "music") want[x.id] = x; });
+    function renderNature(){
+      var n = 0;
       SOUNDS.forEach(function(s){
-        if(s.group === "music") return;
-        if(want[s.id]){
-          setSoundLevel(s.id, want[s.id].level);
-          if(!playing[s.id]){ try{ startSound(s); }catch(e){} }
-        } else if(playing[s.id]) stopSound(s.id);
+        if(isMusic(s)) return;
         var on = !!playing[s.id];
+        if(on){ n++; paintLevel(s.id); }
         tiles[s.id].classList.toggle("on", on);
         tiles[s.id].setAttribute("aria-pressed", on ? "true" : "false");
       });
-      if(typeof saved.level === "number") setSoundLevel("playlist", saved.level);
-      // tracks: load them and start from the top
-      var ids = saved.ids.filter(function(id){ var s = soundById(id); return s && s.group === "music"; });
-      pl.list = ids; pl.at = 0;
-      plSave();
-      if(ids.length) plStartAt(0); else plStop();
+      $("layerCount").textContent = n ? n + (n === 1 ? " layer on" : " layers on") : "Tap to layer sounds";
     }
-    function plNaming(on){
-      $("plBar").classList.toggle("naming", on);
-      $("plNameForm").hidden = !on;
-      if(on){
-        var input = $("plNameInput");
-        input.value = "";
-        input.focus();
+    function toggleNature(s){
+      soundErr.hidden = true;
+      try{
+        if(playing[s.id]) stopSound(s.id); else startSound(s);
+      }catch(err){
+        soundErr.textContent = s.label + " couldn't start: " + (err && (err.name + " " + err.message));
+        soundErr.hidden = false;
       }
-    }
-    // the playlist bar and the saved row take room from the tiles: when either
-    // appears or goes away, work out the rows per page again
-    var chromeWas = "";
-    function refitIfChromeChanged(){
-      var now = $("plBar").hidden + "," + $("plSaved").hidden;
-      if(now === chromeWas) return;
-      chromeWas = now;
-      if(pages && !panel.hidden){
-        pages.forEach(function(pg){ pg.grid.style.minHeight = ""; });
-        fitRows(); renderPages();
-      }
-    }
-    function plRenderSaved(){
-      var box = $("plSaved"), l = plSavedList(), cur = pl.list.join(",") + "|" + mixKey(mixNow());
-      box.hidden = !pl.mode || !l.length;
-      box.innerHTML = "";
-      refitIfChromeChanged();
-      if(box.hidden) return;
-      var lab = document.createElement("span");
-      lab.className = "pl-saved-label"; lab.textContent = "Saved";
-      box.appendChild(lab);
-      l.forEach(function(x){
-        var chip = document.createElement("span");
-        chip.className = "pl-chip" + (x.ids.join(",") + "|" + mixKey(x.sounds) === cur ? " on" : "");
-        var go = document.createElement("button");
-        var sounds = (x.sounds || []).map(function(y){ var s = soundById(y.id); return s ? s.label : ""; }).filter(Boolean);
-        var tracks = x.ids.map(function(id){ var s = soundById(id); return s ? s.label : ""; }).filter(Boolean);
-        go.type = "button"; go.className = "pl-apply";
-        go.title = "Play " + x.name + (tracks.length ? "\nTracks: " + tracks.join(", ") : "") + (sounds.length ? "\nSounds: " + sounds.join(", ") : "");
-        go.textContent = x.name;
-        var n = document.createElement("small");
-        n.textContent = [x.ids.length ? x.ids.length + (x.ids.length === 1 ? " track" : " tracks") : "",
-                         sounds.length ? sounds.length + (sounds.length === 1 ? " sound" : " sounds") : ""].filter(Boolean).join(" \u00b7 ");
-        go.appendChild(n);
-        go.addEventListener("click", function(){ plApply(x); });
-        var del = document.createElement("button");
-        del.type = "button"; del.className = "pl-del"; del.title = "Delete " + x.name;
-        del.setAttribute("aria-label", "Delete " + x.name);
-        del.textContent = "\u00d7";
-        del.addEventListener("click", function(){
-          if(!window.confirm("Delete the playlist \u201c" + x.name + "\u201d?")) return;
-          plSavedStore(plSavedList().filter(function(y){ return y.name !== x.name; }));
-          plRenderSaved();
-        });
-        chip.appendChild(go); chip.appendChild(del);
-        box.appendChild(chip);
-      });
+      render();
     }
 
+    // A level slider for the music and every nature sound that's on.
+    function renderMix(){
+      mixBox.innerHTML = "";
+      function row(icon, name, id){
+        var el = document.createElement("label");
+        el.className = "mix-row";
+        el.innerHTML = svg(icon) + '<span class="mix-name">' + esc(name) + '</span>';
+        el.appendChild(slider(soundLevel(id), name + " volume", function(v){ setSoundLevel(id, v); paintLevel(id); }));
+        mixBox.appendChild(el);
+      }
+      if(pl.list.length) row(ICON.note, "Spa music", "playlist");
+      natureOn().forEach(function(s){ row(s.icon, s.label, s.id); });
+      mixBox.hidden = !mixBox.children.length;
+      $("mixEmpty").hidden = !mixBox.hidden;
+    }
+    function renderBtn(){ btn.classList.toggle("playing", natureOn().length > 0 || pl.playing); }
+
+    /* ---- spa music: categories ---- */
+    var cats = [];
+    SOUNDS.forEach(function(s){ if(isMusic(s) && cats.indexOf(s.cat) === -1) cats.push(s.cat); });
+    var cat = store("music_cat") || "All";
+    if(cat !== "All" && cats.indexOf(cat) === -1) cat = "All";
+    function renderCats(){
+      var box = $("musicCats");
+      box.innerHTML = "";
+      ["All"].concat(cats).forEach(function(c){
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "chip" + (c === cat ? " on" : ""); b.textContent = c;
+        b.setAttribute("aria-pressed", c === cat ? "true" : "false");
+        b.addEventListener("click", function(){ cat = c; store("music_cat", c); renderCats(); });
+        box.appendChild(b);
+      });
+      SOUNDS.forEach(function(s){ if(isMusic(s)) tiles[s.id].classList.toggle("hide", cat !== "All" && s.cat !== cat); });
+    }
+
+    /* ---- Up next: tracks play one after another, in the order they were
+       tapped. Short loops repeat until they've played about PL_TURN seconds
+       so they don't flash by. ---- */
+    var PL_TURN = 120;
+    var pl = {
+      list: storedList("pl_list"), at: 0, cur: null, playing: false, heard: {},
+      shuffle: store("pl_shuffle") === "1", repeat: store("pl_repeat") !== "0", xfade: store("pl_xfade") !== "0",
+      forceRepeat: false   // an alarm keeps the music going whatever Repeat says
+    };
+    pl.list = pl.list.filter(function(id, i, l){ var s = soundById(id); return s && isMusic(s) && l.indexOf(id) === i; });
+    function plSave(){ store("pl_list", JSON.stringify(pl.list)); }
+
     function plTrack(id, done){
-      var s = soundById(id), a = new Audio(s.file), level = 0, target = 1, played = 0, last = Date.now(), handed = false;
-      var FADE = volOK ? 2.5 : 0;
-      a.preload = "auto"; a.volume = 0;
+      var s = soundById(id), a = new Audio(s.file), fade = volOK && pl.xfade ? 2.5 : 0;
+      var level = fade ? 0 : 1, target = 1, played = 0, last = Date.now(), handed = false, timer;
+      a.preload = "auto"; a.volume = 0; a.setAttribute("playsinline", "");
+      function turn(){ var d = a.duration; return d >= PL_TURN ? d : Math.ceil(PL_TURN / d) * d; }
       var t = {
         id: id,
-        play: function(){ last = Date.now(); var pr = a.play(); if(pr && pr.catch) pr.catch(function(){}); },
+        play: function(){ last = Date.now(); var pr = a.play(); if(pr && pr.catch) pr.catch(playFailed); },
         pause: function(){ a.pause(); },
-        stop: function(){ target = 0; if(!volOK) kill(); },
-        kill: kill
+        stop: function(){ target = 0; if(!fade) kill(); },
+        kill: kill,
+        played: function(){ return played; },
+        progress: function(){ var d = a.duration; return isFinite(d) && d > 0 ? Math.min(1, played / turn()) : 0; }
       };
       function kill(){ clearInterval(timer); a.pause(); a.removeAttribute("src"); a.load(); }
       function handOver(){ if(handed) return; handed = true; t.stop(); done(); }
       a.addEventListener("loadedmetadata", function(){ if(a.duration < PL_TURN) a.loop = true; });
       a.addEventListener("ended", handOver);
-      var timer = setInterval(function(){
+      timer = setInterval(function(){
         var now = Date.now();
         if(!a.paused) played += (now - last) / 1000;
         last = now;
-        level = target > level ? Math.min(target, level + .04) : Math.max(target, level - .04);
-        if(volOK) a.volume = Math.max(0, Math.min(1, level * soundVolume() * soundLevel("playlist")));
+        var step = fade ? .1 / fade : 1;
+        level = target > level ? Math.min(target, level + step) : Math.max(target, level - step);
+        if(volOK) a.volume = Math.max(0, Math.min(1, level * outVol() * soundLevel("playlist")));
         if(target === 0 && level === 0) return kill();
         var d = a.duration;
-        if(!handed && isFinite(d) && d > 0){
-          var turn = d >= PL_TURN ? d : Math.ceil(PL_TURN / d) * d;
-          if(played >= turn - FADE - .1) handOver();
-        }
+        if(!handed && isFinite(d) && d > 0 && played >= turn() - fade - .1) handOver();
       }, 100);
       return t;
     }
     function plStartAt(i){
       if(pl.cur) pl.cur.stop();
       pl.cur = null;
-      if(!pl.list.length){ pl.playing = false; plRender(); return; }
-      pl.at = ((i % pl.list.length) + pl.list.length) % pl.list.length;
-      var me = pl.cur = plTrack(pl.list[pl.at], function(){ if(pl.cur === me) plStartAt(pl.at + 1); });
+      if(!pl.list.length){ pl.playing = false; render(); return; }
+      var n = pl.list.length;
+      pl.at = ((i % n) + n) % n;
+      var me = pl.cur = plTrack(pl.list[pl.at], function(){ if(pl.cur === me) plAuto(); });
       pl.playing = true;
       me.play();
-      plRender();
+      render();
+    }
+    // a track finished on its own: the next one, or the end of Up next
+    function plAuto(){
+      pl.heard[pl.list[pl.at]] = true;
+      var n = pl.list.length, rep = pl.repeat || pl.forceRepeat, next = -1;
+      if(pl.shuffle && n > 1){
+        var left = [];
+        pl.list.forEach(function(id, i){ if(!pl.heard[id]) left.push(i); });
+        if(!left.length && rep){
+          pl.heard = {};
+          pl.list.forEach(function(id, i){ if(i !== pl.at) left.push(i); });
+        }
+        if(left.length) next = left[Math.floor(Math.random() * left.length)];
+      } else if(pl.at + 1 < n) next = pl.at + 1;
+      else if(rep){ pl.heard = {}; next = 0; }
+      if(next !== -1){ plStartAt(next); return; }
+      plStop();
+      pl.at = 0; pl.heard = {};
+      render();
+      if(sleep.mode === "end") sleepFire();
     }
     function plStop(){
       if(pl.cur) pl.cur.kill();
       pl.cur = null; pl.playing = false;
-      plRender();
+      render();
     }
     function plToggle(){
-      if(pl.playing){ pl.cur.pause(); pl.playing = false; }
-      else if(pl.cur){ pl.cur.play(); pl.playing = true; }
-      else plStartAt(pl.at);
-      plRender();
+      if(pl.playing){ pl.cur.pause(); pl.playing = false; render(); }
+      else if(pl.cur){ pl.cur.play(); pl.playing = true; render(); }
+      else { pl.heard = {}; plStartAt(pl.at); }
     }
-    function plSetMode(on){
-      pl.mode = on;
-      store("pl_mode", on ? "1" : "0");
-      if(on){
-        // spa music stops layering while the playlist is in charge
-        SOUNDS.forEach(function(s){ if(s.group === "music" && playing[s.id]) stopSound(s.id); });
-      } else plStop();
-      plRender();
+    function plNext(){
+      var n = pl.list.length;
+      if(!n) return;
+      if(pl.shuffle && n > 1){
+        var k = Math.floor(Math.random() * (n - 1));
+        plStartAt(k >= pl.at ? k + 1 : k);
+      } else plStartAt(pl.at + 1);
+    }
+    function plPrev(){
+      if(!pl.list.length) return;
+      plStartAt(pl.cur && pl.cur.played() > 5 ? pl.at : pl.at - 1);   // a few seconds in: back to its start
+    }
+    function plRemove(k){
+      var wasCur = !!pl.cur && k === pl.at;
+      pl.list.splice(k, 1);
+      plSave();
+      if(!pl.list.length){ pl.at = 0; plStop(); return; }
+      if(wasCur){
+        if(pl.playing){ plStartAt(k); return; }
+        pl.cur.kill(); pl.cur = null; pl.at = k % pl.list.length;
+      } else if(k < pl.at) pl.at--;
+      if(pl.at >= pl.list.length) pl.at = 0;
+      render();
+    }
+    function plMove(k, d){
+      var j = k + d;
+      if(j < 0 || j >= pl.list.length) return;
+      var x = pl.list[k]; pl.list[k] = pl.list[j]; pl.list[j] = x;
+      if(pl.at === k) pl.at = j; else if(pl.at === j) pl.at = k;
+      plSave();
+      render();
     }
     function plTap(s){
       var k = pl.list.indexOf(s.id);
-      if(k === -1){ pl.list.push(s.id); }
-      else{
-        pl.list.splice(k, 1);
-        if(pl.cur && pl.cur.id === s.id) plStartAt(k);          // removed the one playing: go on to the next
-        else if(k < pl.at) pl.at--;
-        if(!pl.list.length) plStop();
-      }
+      if(k !== -1){ plRemove(k); return; }
+      pl.list.push(s.id);
       plSave();
-      plRender();
+      if(!pl.cur) plStartAt(pl.list.length - 1);   // nothing playing: start with this one
+      else render();
     }
-    function plRender(){
-      $("plMode").setAttribute("aria-pressed", pl.mode ? "true" : "false");
-      $("plBar").hidden = !pl.mode;
-      var play = $("plPlay");
-      play.innerHTML = pl.playing
-        ? '<svg viewBox="0 0 24 24"><path class="fill" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>'
-        : '<svg viewBox="0 0 24 24"><path class="fill" d="M7 5l12 7-12 7z"/></svg>';
-      play.title = pl.playing ? "Pause" : "Play";
-      play.disabled = $("plNext").disabled = !pl.list.length;
-      $("plSaveBtn").disabled = !canSave();
-      if(!pl.mode || !canSave()) plNaming(false);
-      plRenderSaved();
-      $("plNow").textContent = !pl.list.length ? "Tap tracks below in the order you want them"
-        : pl.cur ? (pl.playing ? "Playing " : "Paused: ") + soundById(pl.cur.id).label + " · " + (pl.at + 1) + " of " + pl.list.length
-        : pl.list.length + (pl.list.length === 1 ? " track" : " tracks") + " ready";
+
+    function renderMusic(){
       SOUNDS.forEach(function(s){
-        if(s.group !== "music") return;
-        var b = tiles[s.id], k = pl.list.indexOf(s.id), num = b.querySelector(".pl-num");
-        if(pl.mode && k !== -1){
+        if(!isMusic(s)) return;
+        var b = tiles[s.id], k = pl.list.indexOf(s.id), cur = !!(pl.cur && pl.cur.id === s.id);
+        var num = b.querySelector(".pl-num"), eq = b.querySelector(".eq");
+        if(k !== -1){
           if(!num){ num = document.createElement("i"); num.className = "pl-num"; b.appendChild(num); }
           num.textContent = k + 1;
         } else if(num) num.remove();
-        var on = pl.mode ? !!(pl.cur && pl.cur.id === s.id) : !!playing[s.id];
-        b.classList.toggle("queued", pl.mode && k !== -1);
-        b.classList.toggle("on", on);
-        b.setAttribute("aria-pressed", on ? "true" : "false");
+        if(cur && !eq){ eq = document.createElement("span"); eq.className = "eq"; eq.innerHTML = "<i></i><i></i><i></i>"; b.appendChild(eq); }
+        else if(!cur && eq){ eq.remove(); eq = null; }
+        if(eq) eq.classList.toggle("paused", !pl.playing);
+        b.classList.toggle("on", k !== -1);
+        b.setAttribute("aria-pressed", k !== -1 ? "true" : "false");
+        b.title = (k !== -1 ? "Take out of Up next: " : "Add to Up next: ") + s.label + (s.artist ? " · " + s.artist : "");
       });
-      renderBtn();
-      renderMix();
     }
+    function renderNow(){
+      var id = pl.cur ? pl.cur.id : pl.list[pl.at], s = id ? soundById(id) : null;
+      $("npArt").innerHTML = svg(s ? s.icon : ICON.note);
+      $("npKicker").textContent = pl.playing ? "Now playing" : pl.cur ? "Paused" : s ? "Up next" : "Now playing";
+      $("npTitle").textContent = s ? s.label : "Nothing yet";
+      $("npSub").textContent = s ? "Track " + (pl.at + 1) + " of " + pl.list.length + (trackSub(s) ? " · " + trackSub(s) : "")
+                                 : "Tap spa music to start Up next";
+      var play = $("npPlay");
+      play.innerHTML = svg(pl.playing ? I_PAUSE : I_PLAY);
+      play.title = pl.playing ? "Pause" : "Play";
+      play.disabled = $("npNext").disabled = $("npPrev").disabled = !pl.list.length;
+      $("npShuffle").setAttribute("aria-pressed", pl.shuffle ? "true" : "false");
+      $("npRepeat").setAttribute("aria-pressed", pl.repeat ? "true" : "false");
+      $("npXfade").setAttribute("aria-checked", pl.xfade ? "true" : "false");
+      $("npProg").style.width = (pl.cur ? pl.cur.progress() * 100 : 0) + "%";
+    }
+    function renderQueue(){
+      var box = $("qList");
+      box.innerHTML = "";
+      if(!pl.list.length) box.innerHTML = '<p class="np-empty">Nothing in Up next yet. Tap spa music tracks to add them in the order you want them.</p>';
+      pl.list.forEach(function(id, k){
+        var s = soundById(id), cur = !!pl.cur && k === pl.at;
+        var row = document.createElement("div");
+        row.className = "q-row" + (cur ? " cur" : "");
+        row.title = "Play " + s.label;
+        row.innerHTML = '<span class="q-n">' + (k + 1) + '</span>' + svg(s.icon) +
+          '<span class="q-name"><b>' + esc(s.label) + '</b><small>' + esc(cur ? (pl.playing ? "Playing now" : "Paused") : trackSub(s)) + '</small></span>' +
+          '<span class="q-acts">' +
+            '<button type="button" data-a="up" title="Move up" aria-label="Move ' + esc(s.label) + ' up"' + (k === 0 ? " disabled" : "") + '>' + svg(I_UP) + '</button>' +
+            '<button type="button" data-a="down" title="Move down" aria-label="Move ' + esc(s.label) + ' down"' + (k === pl.list.length - 1 ? " disabled" : "") + '>' + svg(I_DOWN) + '</button>' +
+            '<button type="button" data-a="rm" title="Remove from Up next" aria-label="Remove ' + esc(s.label) + '">' + svg(I_X) + '</button>' +
+          '</span>';
+        row.addEventListener("click", function(e){
+          var b = e.target.closest("button"), a = b && b.getAttribute("data-a");
+          if(a === "up") plMove(k, -1);
+          else if(a === "down") plMove(k, 1);
+          else if(a === "rm") plRemove(k);
+          else if(!b){ pl.heard = {}; plStartAt(k); }
+        });
+        box.appendChild(row);
+      });
+      $("qClear").hidden = !pl.list.length;
+    }
+
+    /* ---- mixes: Up next and the nature sounds on with it, at their levels ---- */
+    function mixesSaved(){ return storedList("pl_saved").filter(function(x){ return x && x.name && Array.isArray(x.ids); }); }
+    function mixesStore(l){ store("pl_saved", JSON.stringify(l)); }
+    function canSave(){ return pl.list.length > 0 || natureOn().length > 0; }
+    function mixSig(x){ return (x.ids || []).join(",") + "|" + (x.sounds || []).map(function(y){ return y.id; }).sort().join(","); }
+    function mixSummary(x){
+      var t = (x.ids || []).length, names = (x.sounds || []).map(function(y){ return labelOf(y.id); }).filter(Boolean);
+      return [t ? t + (t === 1 ? " track" : " tracks") : "", names.join(", ")].filter(Boolean).join(" · ");
+    }
+    function mixIcon(x){
+      var s = soundById((x.ids || [])[0]) || soundById(((x.sounds || [])[0] || {}).id);
+      return s ? s.icon : ICON.note;
+    }
+    function applyMix(saved){
+      var want = {};
+      (saved.sounds || []).forEach(function(x){ var s = soundById(x.id); if(s && !isMusic(s)) want[x.id] = x; });
+      SOUNDS.forEach(function(s){
+        if(isMusic(s)) return;
+        if(want[s.id]){
+          if(typeof want[s.id].level === "number") setSoundLevel(s.id, want[s.id].level);
+          if(!playing[s.id]){ try{ startSound(s); }catch(e){} }
+        } else if(playing[s.id]) stopSound(s.id);
+      });
+      if(typeof saved.level === "number") setSoundLevel("playlist", saved.level);
+      pl.list = (saved.ids || []).filter(function(id, i, l){ var s = soundById(id); return s && isMusic(s) && l.indexOf(id) === i; });
+      pl.at = 0; pl.heard = {};
+      plSave();
+      if(pl.list.length) plStartAt(0); else plStop();
+    }
+    function renderMixes(){
+      var box = $("mxList"), l = mixesSaved(), now = mixSig({ ids: pl.list, sounds: natureLevels() });
+      box.innerHTML = "";
+      if(!l.length){
+        box.innerHTML = '<p class="np-empty">No mixes yet. Build Up next, turn on a few nature sounds, then save them from the Up next tab.</p>';
+        return;
+      }
+      l.forEach(function(x){
+        var row = document.createElement("div");
+        row.className = "mx-row" + (mixSig(x) === now ? " on" : "");
+        row.title = "Play " + x.name;
+        row.innerHTML = '<span class="mx-art">' + svg(mixIcon(x)) + '</span>' +
+          '<span class="q-name"><b>' + esc(x.name) + '</b><small>' + esc(mixSummary(x)) + '</small></span>' +
+          '<span class="q-acts">' +
+            '<button type="button" data-a="play" aria-label="Play ' + esc(x.name) + '">' + svg(I_PLAY) + '</button>' +
+            '<button type="button" data-a="del" title="Delete" aria-label="Delete ' + esc(x.name) + '">' + svg(I_X) + '</button>' +
+          '</span>';
+        row.addEventListener("click", function(e){
+          var b = e.target.closest("button");
+          if(b && b.getAttribute("data-a") === "del"){
+            if(!window.confirm("Delete the mix “" + x.name + "”?")) return;
+            mixesStore(mixesSaved().filter(function(y){ return y.name !== x.name; }));
+            render();
+            return;
+          }
+          applyMix(x);
+        });
+        box.appendChild(row);
+      });
+    }
+    function renderSaveBox(){
+      var names = mixesSaved().map(function(x){ return x.name.toLowerCase(); }), n = names.length + 1;
+      while(names.indexOf("mix " + n) !== -1) n++;
+      $("mixName").placeholder = "Mix " + n;
+      $("mixSave").disabled = !canSave();
+    }
+
+    /* ---- tabs ---- */
+    var TABS = { queue: ["tabQueue", "paneQueue"], mixes: ["tabMixes", "paneMixes"], alarm: ["tabAlarm", "paneAlarm"] };
+    var tab = TABS[store("np_tab")] ? store("np_tab") : "queue";
+    function renderTabs(){
+      $("tabQueue").textContent = "Up next · " + pl.list.length;
+      $("tabMixes").textContent = "Mixes · " + mixesSaved().length;
+      Object.keys(TABS).forEach(function(k){
+        $(TABS[k][0]).setAttribute("aria-selected", k === tab ? "true" : "false");
+        $(TABS[k][1]).hidden = k !== tab;
+      });
+    }
+    function showTab(k){ tab = k; store("np_tab", k); render(); }
+
+    /* ---- sleep timer: fades everything out, then stops it ---- */
+    var SLEEP = [["off", "Off"], ["15", "15 min"], ["30", "30 min"], ["60", "1 hr"], ["end", "End of queue"]];
+    var sleep = { mode: "off", until: 0 }, fading = null;
+    function timeLeft(ms){
+      var s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+      return (h ? h + ":" + pad2(m) : m) + ":" + pad2(s % 60);
+    }
+    function sleepLabel(o){ return o[1] + (sleep.mode === o[0] && sleep.until ? " · " + timeLeft(sleep.until - Date.now()) : ""); }
+    function renderSleep(){
+      var box = $("sleepChips");
+      if(!box.children.length){
+        SLEEP.forEach(function(o){
+          var b = document.createElement("button");
+          b.type = "button"; b.className = "chip";
+          b.addEventListener("click", function(){ setSleep(o[0]); });
+          box.appendChild(b);
+        });
+      }
+      SLEEP.forEach(function(o, i){
+        var b = box.children[i];
+        b.classList.toggle("on", sleep.mode === o[0]);
+        b.setAttribute("aria-pressed", sleep.mode === o[0] ? "true" : "false");
+        b.textContent = sleepLabel(o);
+      });
+    }
+    function setSleep(m){
+      sleep.mode = m;
+      sleep.until = /^\d+$/.test(m) ? Date.now() + m * 60000 : 0;
+      if(fading){ clearInterval(fading); fading = null; volHook.fade = 1; }
+      renderSleep();
+    }
+    function stopAll(){
+      natureOn().forEach(function(s){ stopSound(s.id); });
+      plStop();
+    }
+    function sleepFire(){
+      sleep.mode = "off"; sleep.until = 0;
+      renderSleep();
+      clearInterval(fading);
+      var t0 = Date.now(), FADE = 30000;
+      fading = setInterval(function(){
+        var f = 1 - (Date.now() - t0) / FADE;
+        if(f > 0){ volHook.fade = f; return; }
+        clearInterval(fading); fading = null;
+        volHook.fade = 0;
+        stopAll();
+        setTimeout(function(){ if(!fading) volHook.fade = 1; }, 1500);   // after the sounds have let go
+      }, 100);
+    }
+
+    /* ---- alarms: ring with a mix at a time of day, the volume rising
+       gently. They ring from this page, so it has to be open. ---- */
+    var DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], DAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var DEFAULT_MIX = { name: "Birdsong and piano", ids: ["piano"], sounds: [{ id: "birds", level: .8 }] };
+    var SNOOZE_MIN = 9, RISES = [1, 3, 5, 10];
+    var ringing = null, snooze = null, editing = null;
+    function alarmsList(){ return storedList("alarms").filter(function(a){ return a && a.id; }); }
+    function alarmsStore(l){ store("alarms", JSON.stringify(l)); keepAliveForAlarms(); }
+    function armed(){ return !!snooze || alarmsList().some(function(a){ return a.on; }); }
+    // iPhone/iPad app: a silent loop keeps the app running in the background
+    // overnight, so the alarm can still ring
+    alarmKeepAlive = function(){ return IN_APP && armed(); };
+    function keepAliveForAlarms(){
+      if(!IN_APP) return;
+      if(armed()) holdMediaSession(true);
+      else if(!Object.keys(mixes).length) holdMediaSession(false);
+    }
+    function daysText(d){
+      d = (d || []).slice().sort();
+      if(!d.length) return "Once";
+      if(d.length === 7) return "Every day";
+      if(d.join() === "1,2,3,4,5") return "Weekdays";
+      if(d.join() === "0,6") return "Weekends";
+      return d.map(function(i){ return DAY[i]; }).join(", ");
+    }
+    function alarmMix(a){
+      var m = a.mix;
+      return m && ((m.ids || []).length || (m.sounds || []).length) ? m : DEFAULT_MIX;
+    }
+    function nextRing(a, from){
+      for(var i = 0; i < 8; i++){
+        var d = new Date(from);
+        d.setDate(d.getDate() + i);
+        d.setHours(a.h, a.m, 0, 0);
+        if(d > from && (!(a.days || []).length || a.days.indexOf(d.getDay()) !== -1)) return d;
+      }
+      return null;
+    }
+    function nextText(){
+      var now = new Date(), best = null;
+      alarmsList().forEach(function(a){ if(!a.on) return; var d = nextRing(a, now); if(d && (!best || d < best)) best = d; });
+      if(!best) return "";
+      var mins = Math.ceil((best - now) / 60000), h = Math.floor(mins / 60), m = mins % 60;
+      var tmr = new Date(now); tmr.setDate(tmr.getDate() + 1);
+      var day = best.toDateString() === now.toDateString() ? "Today" : best.toDateString() === tmr.toDateString() ? "Tomorrow" : DAY_FULL[best.getDay()];
+      var c = clockText(best.getHours(), best.getMinutes());
+      return "Next alarm: " + day + " " + c.t + " " + c.ap + (h < 24 ? " · in " + (h ? h + " hr " : "") + m + " min" : "");
+    }
+    function checkAlarms(){
+      var now = new Date();
+      if(snooze && now >= snooze.at){ var s = snooze.alarm; snooze = null; ring(s); return; }
+      if(ringing || snooze) return;
+      var l = alarmsList(), due = null;
+      l.forEach(function(a){
+        if(!a.on || due) return;
+        var at = new Date(now);
+        at.setHours(a.h, a.m, 0, 0);
+        // up to 10 minutes late (a sleeping tab checks less often), never before it was set
+        if(now < at || now - at > 10 * 60000 || at.getTime() <= (a.armedAt || 0) || a.fired === at.getTime()) return;
+        if((a.days || []).length && a.days.indexOf(at.getDay()) === -1) return;
+        a.fired = at.getTime();
+        if(!(a.days || []).length) a.on = false;   // a one-time alarm turns itself off
+        due = a;
+      });
+      if(!due) return;
+      alarmsStore(l);
+      ring(due);
+    }
+    function ring(a){
+      setSleep("off");
+      editing = null;
+      ringing = { alarm: a, start: Date.now(), blocked: false };
+      volHook.alarm = volOK ? .04 : null;
+      onBlocked = function(){ if(ringing){ ringing.blocked = true; renderRing(); } };
+      pl.forceRepeat = true;
+      applyMix(alarmMix(a));
+      ringEl.hidden = false;
+      renderRing();
+      tickRing();
+    }
+    function tickRing(){
+      if(ringEl.hidden) return;
+      var now = new Date(), c = clockText(now.getHours(), now.getMinutes());
+      $("asTime").textContent = c.t;
+      $("asAmpm").textContent = c.ap;
+      if(!ringing) return;
+      var a = ringing.alarm, target = a.vol || .6, f = Math.min(1, (Date.now() - ringing.start) / ((a.rise || 3) * 60000));
+      if(!volOK){ $("asBar").hidden = true; $("asVol").textContent = "Playing at your device's volume"; return; }
+      volHook.alarm = .04 + (target - .04) * f;
+      $("asBar").hidden = false;
+      $("asProg").style.width = (volHook.alarm / target * 100) + "%";
+      $("asVol").textContent = f < 1 ? "Volume rising · " + pct(volHook.alarm) + " of " + pct(target) : "Volume " + pct(target);
+    }
+    function renderRing(){
+      var a = ringing ? ringing.alarm : snooze ? snooze.alarm : null;
+      if(!a) return;
+      var m = alarmMix(a), first = soundById((m.ids || [])[0]);
+      var names = (m.sounds || []).map(function(y){ return labelOf(y.id); }).filter(Boolean);
+      var h = new Date().getHours();
+      $("asLabel").textContent = a.label || "Alarm";
+      $("asGreet").textContent = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+      $("asArt").innerHTML = svg(mixIcon(m));
+      $("asName").textContent = m.name || "Your mix";
+      if(snooze){
+        var c = clockText(new Date(snooze.at).getHours(), new Date(snooze.at).getMinutes());
+        $("asSub").textContent = "Snoozed · rings again at " + c.t + " " + c.ap;
+        $("asBar").hidden = true;
+        $("asVol").textContent = "";
+      } else {
+        $("asSub").textContent = [first ? trackSub(first) || first.label : "", names.length ? (first ? "with " : "") + names.join(", ") : ""].filter(Boolean).join(" · ");
+      }
+      $("asStart").hidden = !(ringing && ringing.blocked);
+      $("asSnooze").hidden = $("asKeep").hidden = !ringing;
+      $("asStop").textContent = ringing ? "Stop alarm" : "Turn off alarm";
+    }
+    // keep: leave the mix playing at the volume it had risen to
+    function endRing(keep){
+      if(keep && ringing && volHook.alarm != null){
+        store("sound_vol", String(Math.round(volHook.alarm * 100) / 100));
+        vol.value = Math.round(volHook.alarm * 100);
+        paintRange(vol);
+      }
+      if(!keep) stopAll();
+      ringing = null; snooze = null; onBlocked = null;
+      volHook.alarm = null; pl.forceRepeat = false;
+      ringEl.hidden = true;
+      keepAliveForAlarms();
+      render();
+    }
+    $("asSnooze").addEventListener("click", function(){
+      if(!ringing) return;
+      snooze = { alarm: ringing.alarm, at: Date.now() + SNOOZE_MIN * 60000 };
+      ringing = null; onBlocked = null; volHook.alarm = null; pl.forceRepeat = false;
+      stopAll();
+      renderRing();
+      render();
+    });
+    $("asStop").addEventListener("click", function(){ endRing(false); });
+    $("asKeep").addEventListener("click", function(){ endRing(true); });
+    $("asBack").addEventListener("click", function(){
+      if(ringing) endRing(true);
+      else { ringEl.hidden = true; tab = "alarm"; }   // snoozed: it still rings again; cancel it from the Alarm tab
+      openPanel();
+    });
+    $("asStart").addEventListener("click", function(){
+      if(!ringing) return;
+      ringing.blocked = false;
+      natureOn().forEach(function(s){ stopSound(s.id); });
+      applyMix(alarmMix(ringing.alarm));   // again, now inside a tap
+      renderRing();
+    });
+
+    function renderAlarms(){
+      var box = $("alList");
+      $("alForm").hidden = !editing;
+      box.hidden = !!editing;
+      if(editing) return;
+      box.innerHTML = "";
+      if(snooze){
+        var c = clockText(new Date(snooze.at).getHours(), new Date(snooze.at).getMinutes());
+        var sn = document.createElement("div");
+        sn.className = "al-snooze";
+        sn.innerHTML = '<span>Snoozed until ' + c.t + " " + c.ap + '</span>';
+        var cancel = document.createElement("button");
+        cancel.type = "button"; cancel.className = "linkbtn"; cancel.textContent = "Cancel";
+        cancel.addEventListener("click", function(){ snooze = null; ringEl.hidden = true; keepAliveForAlarms(); render(); });
+        sn.appendChild(cancel);
+        box.appendChild(sn);
+      }
+      alarmsList().sort(function(x, y){ return (x.h * 60 + x.m) - (y.h * 60 + y.m); }).forEach(function(a){
+        var c = clockText(a.h, a.m), card = document.createElement("div");
+        card.className = "al-card" + (a.on ? "" : " off");
+        var rise = volOK ? " · rises to " + pct(a.vol || .6) + " over " + (a.rise || 3) + " min" : "";
+        card.innerHTML = '<button class="al-main" type="button" title="Edit this alarm">' +
+          '<span class="al-time">' + c.t + '<small>' + c.ap + '</small></span>' +
+          '<span class="al-meta">' + esc((a.label || "Alarm") + " · " + daysText(a.days)) + '</span>' +
+          '<span class="al-meta">' + esc(alarmMix(a).name + rise) + '</span></button>';
+        var sw = document.createElement("button");
+        sw.type = "button"; sw.className = "switch"; sw.setAttribute("role", "switch");
+        sw.setAttribute("aria-checked", a.on ? "true" : "false");
+        sw.setAttribute("aria-label", (a.label || "Alarm") + " at " + c.t + " " + c.ap);
+        sw.addEventListener("click", function(){
+          var l = alarmsList();
+          l.forEach(function(x){ if(x.id === a.id){ x.on = !x.on; if(x.on){ x.armedAt = Date.now(); x.fired = null; } } });
+          alarmsStore(l);
+          render();
+        });
+        card.firstChild.addEventListener("click", function(){ openEditor(a); });
+        card.appendChild(sw);
+        box.appendChild(card);
+      });
+      var add = document.createElement("button");
+      add.type = "button"; add.className = "btn-ghost al-add";
+      add.innerHTML = svg('<path d="M12 5v14M5 12h14"/>') + "<span>Add alarm</span>";
+      add.addEventListener("click", function(){ openEditor(null); });
+      box.appendChild(add);
+      var next = nextText();
+      if(next){ var p = document.createElement("p"); p.className = "al-next"; p.textContent = next; box.appendChild(p); }
+      var note = document.createElement("p");
+      note.className = "al-note";
+      note.textContent = IN_APP
+        ? "Alarms ring from Porchlight, so leave the app open in the background (don't swipe it away) and the volume up."
+        : "Alarms ring from this page, so leave it open in a tab and keep the computer awake.";
+      box.appendChild(note);
+    }
+    function openEditor(a){
+      editing = a ? copy(a) : { id: Date.now().toString(36), on: true, h: 6, m: 30, label: "", days: [1, 2, 3, 4, 5], vol: .6, rise: 3, mix: null, isNew: true };
+      var e = editing;
+      $("alTime").value = pad2(e.h) + ":" + pad2(e.m);
+      $("alLabel").value = e.label || "";
+      var sel = $("alMix"), l = mixesSaved(), match = -1;
+      sel.innerHTML = "";
+      function opt(v, text){ var o = document.createElement("option"); o.value = v; o.textContent = text; sel.appendChild(o); }
+      l.forEach(function(x, i){ opt("m" + i, x.name + " — " + mixSummary(x)); if(e.mix && e.mix.name === x.name) match = i; });
+      if(e.mix && match === -1) opt("keep", e.mix.name + " (as saved with this alarm)");
+      if(canSave()) opt("now", "What's playing now");
+      opt("default", DEFAULT_MIX.name);
+      sel.value = match !== -1 ? "m" + match : e.mix ? "keep" : l.length ? "m0" : canSave() ? "now" : "default";
+      $("alVol").value = Math.round((e.vol || .6) * 100);
+      paintRange($("alVol"));
+      $("alVolText").textContent = $("alVol").value + "%";
+      $("alVolBox").hidden = $("alRiseBox").hidden = !volOK;
+      $("alDelete").hidden = !!e.isNew;
+      renderDays();
+      renderRise();
+      render();
+    }
+    function renderDays(){
+      var box = $("alDays");
+      box.innerHTML = "";
+      "SMTWTFS".split("").forEach(function(ch, i){
+        var on = editing.days.indexOf(i) !== -1, b = document.createElement("button");
+        b.type = "button"; b.className = "chip" + (on ? " on" : ""); b.textContent = ch;
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+        b.setAttribute("aria-label", DAY_FULL[i]);
+        b.addEventListener("click", function(){
+          var k = editing.days.indexOf(i);
+          if(k === -1) editing.days.push(i); else editing.days.splice(k, 1);
+          renderDays();
+        });
+        box.appendChild(b);
+      });
+      $("alDaysText").textContent = daysText(editing.days) + (editing.days.length ? "" : " · turns itself off after it rings");
+    }
+    function renderRise(){
+      var box = $("alRise");
+      box.innerHTML = "";
+      RISES.forEach(function(n){
+        var on = (editing.rise || 3) === n, b = document.createElement("button");
+        b.type = "button"; b.className = "chip" + (on ? " on" : ""); b.textContent = n + " min";
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+        b.addEventListener("click", function(){ editing.rise = n; renderRise(); });
+        box.appendChild(b);
+      });
+    }
+    // the alarm as the form has it now
+    function formAlarm(){
+      var e = copy(editing), t = $("alTime").value.split(":"), v = $("alMix").value, l = mixesSaved();
+      if(t.length < 2 || t[0] === "") return null;
+      e.h = +t[0]; e.m = +t[1];
+      e.label = $("alLabel").value.trim();
+      e.vol = $("alVol").value / 100;
+      if(v.charAt(0) === "m" && l[+v.slice(1)]) e.mix = copy(l[+v.slice(1)]);
+      else if(v === "now"){
+        var first = labelOf(pl.list[0]), names = natureOn().map(function(s){ return s.label; });
+        e.mix = { name: (first ? first + (names.length ? " with " : "") : "") + names.slice(0, 2).join(" and ") || "My mix",
+                  ids: pl.list.slice(), sounds: natureLevels(), level: soundLevel("playlist") };
+      }
+      else if(v === "default") e.mix = null;
+      return e;
+    }
+    $("alVol").addEventListener("input", function(){ paintRange(this); $("alVolText").textContent = this.value + "%"; });
+    $("alForm").addEventListener("submit", function(ev){
+      ev.preventDefault();
+      var e = formAlarm();
+      if(!e){ $("alTime").focus(); return; }
+      delete e.isNew;
+      e.on = true; e.armedAt = Date.now(); e.fired = null;
+      alarmsStore(alarmsList().filter(function(a){ return a.id !== e.id; }).concat([e]));
+      editing = null;
+      render();
+    });
+    $("alCancel").addEventListener("click", function(){ editing = null; render(); });
+    $("alDelete").addEventListener("click", function(){
+      if(!window.confirm("Delete this alarm?")) return;
+      var id = editing.id;
+      alarmsStore(alarmsList().filter(function(a){ return a.id !== id; }));
+      editing = null;
+      render();
+    });
+    $("alTest").addEventListener("click", function(){
+      var e = formAlarm();
+      if(!e) return;
+      var keep = editing;
+      ring(e);
+      editing = keep;   // back to the form after the test
+    });
+
+    /* ---- everything on screen follows the state ---- */
+    function render(){
+      renderNature();
+      renderMusic();
+      renderNow();
+      renderQueue();
+      renderMixes();
+      renderSaveBox();
+      renderTabs();
+      renderSleep();
+      renderAlarms();
+      renderMix();
+      renderBtn();
+    }
+
     // closing plays the shrink animation first, then hides the panel
     var closeTimer = null;
     function openPanel(){
@@ -2861,10 +3453,7 @@
       panel.classList.remove("closing");
       panel.hidden = false;
       btn.setAttribute("aria-expanded", "true");
-      pages.forEach(function(pg){ pg.grid.style.minHeight = ""; pg.rows = 2; });
-      renderPages();
-      fitRows();
-      renderPages();
+      render();
     }
     function closePanel(){
       if(panel.hidden || panel.classList.contains("closing")) return;
@@ -2878,73 +3467,48 @@
       b.className = "sound";
       b.type = "button";
       b.setAttribute("aria-pressed", "false");
-      b.innerHTML = '<svg viewBox="0 0 24 24">' + s.icon + '</svg><span>' + s.label + '</span>';
+      b.innerHTML = svg(s.icon) + '<span class="nm">' + esc(s.label) + '</span>' + (isMusic(s) ? "" : '<span class="lvl"><i></i></span>');
       tiles[s.id] = b;
-      b.addEventListener("click", function(){
-        soundErr.hidden = true;
-        if(s.group === "music" && pl.mode){ plTap(s); return; }
-        try{
-          if(playing[s.id]) stopSound(s.id); else startSound(s);
-        }catch(err){
-          // show it rather than fail silently; drop a broken audio context so
-          // the next tap starts fresh
-          if(!s.file){ audio = null; master = null; noiseBufs = {}; delete mixes[s.id]; }
-          soundErr.textContent = s.label + " couldn't start: " + (err && (err.name + " " + err.message));
-          soundErr.hidden = false;
-        }
-        var on = !!playing[s.id];
-        b.classList.toggle("on", on);
-        b.setAttribute("aria-pressed", on ? "true" : "false");
-        renderBtn();
-        renderMix();
-      });
-      (s.group === "music" ? $("musicGrid") : grid).appendChild(b);
+      b.addEventListener("click", function(){ if(isMusic(s)) plTap(s); else toggleNature(s); });
+      $(isMusic(s) ? "musicGrid" : "soundGrid").appendChild(b);
     });
+    renderCats();
 
-    pages = [
-      { grid: grid, pager: $("pgNature"), rows: 3, at: 0 },
-      { grid: $("musicGrid"), pager: $("pgMusic"), rows: 2, at: 0 }
-    ];
-    pages.forEach(function(pg){
-      pg.pager.addEventListener("click", function(e){
-        var d = e.target.closest("[data-d]"), dot = e.target.closest("[data-p]");
-        if(d) pageGo(pg, pg.at + Number(d.getAttribute("data-d")));
-        else if(dot) pageGo(pg, Number(dot.getAttribute("data-p")));
-      });
-      // swipe left/right on the tiles
-      var sx = 0, sy = 0;
-      pg.grid.addEventListener("touchstart", function(e){ sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
-      pg.grid.addEventListener("touchend", function(e){
-        var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
-        if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) pageGo(pg, pg.at + (dx < 0 ? 1 : -1));
-      }, {passive:true});
-      pg.grid.addEventListener("animationend", function(){ pg.grid.classList.remove("from-right", "from-left"); });
-    });
-    window.addEventListener("resize", function(){ fitRows(); renderPages(); });
     $("soundClose").addEventListener("click", function(e){ e.stopPropagation(); closePanel(); });
-
-    $("plMode").addEventListener("click", function(){ plSetMode(!pl.mode); });
-    $("plPlay").addEventListener("click", plToggle);
-    $("plNext").addEventListener("click", function(){ plStartAt(pl.at + 1); });
-    $("plClear").addEventListener("click", function(){ pl.list = []; pl.at = 0; plSave(); plStop(); });
-    $("plSaveBtn").addEventListener("click", function(){ if(canSave()) plNaming(true); });
-    $("plNameCancel").addEventListener("click", function(){ plNaming(false); });
-    $("plNameForm").addEventListener("submit", function(e){
+    $("npPlay").addEventListener("click", plToggle);
+    $("npNext").addEventListener("click", plNext);
+    $("npPrev").addEventListener("click", plPrev);
+    $("npShuffle").addEventListener("click", function(){
+      pl.shuffle = !pl.shuffle; pl.heard = {};
+      store("pl_shuffle", pl.shuffle ? "1" : "0"); render();
+    });
+    $("npRepeat").addEventListener("click", function(){ pl.repeat = !pl.repeat; store("pl_repeat", pl.repeat ? "1" : "0"); render(); });
+    $("npXfade").addEventListener("click", function(){ pl.xfade = !pl.xfade; store("pl_xfade", pl.xfade ? "1" : "0"); render(); });
+    Object.keys(TABS).forEach(function(k){ $(TABS[k][0]).addEventListener("click", function(){ showTab(k); }); });
+    $("qClear").addEventListener("click", function(){ pl.list = []; pl.at = 0; plSave(); plStop(); });
+    $("mixForm").addEventListener("submit", function(e){
       e.preventDefault();
-      var name = $("plNameInput").value.trim();
-      if(!name){ $("plNameInput").focus(); return; }
-      plSaveAs(name);
-      plNaming(false);
-      plRenderSaved();
+      if(!canSave()) return;
+      var input = $("mixName"), name = input.value.trim() || input.placeholder;
+      var l = mixesSaved().filter(function(x){ return x.name.toLowerCase() !== name.toLowerCase(); });
+      l.unshift({ name: name, ids: pl.list.slice(), sounds: natureLevels(), level: soundLevel("playlist") });
+      mixesStore(l);
+      input.value = "";
+      input.blur();
+      var b = $("mixSave");
+      b.textContent = "Saved";
+      setTimeout(function(){ b.textContent = "Save"; }, 1400);
+      render();
     });
-    $("plNameInput").addEventListener("keydown", function(e){
-      if(e.key === "Escape"){ e.stopPropagation(); plNaming(false); }   // don't close the whole panel
+    ["mixName", "alLabel", "alTime"].forEach(function(id){
+      $(id).addEventListener("keydown", function(e){ if(e.key === "Escape"){ e.stopPropagation(); this.blur(); } });   // don't close the whole panel
     });
-    plRender();
 
     vol.value = Math.round(soundVolume() * 100);
+    paintRange(vol);
     vol.addEventListener("input", function(){
       var v = vol.value / 100;
+      paintRange(vol);
       if(master) master.gain.setTargetAtTime(v, audio.currentTime, .05);
       store("sound_vol", String(v));
     });
@@ -2956,12 +3520,31 @@
     document.addEventListener("click", function(e){
       // (a tap on something the panel just redrew, like the play button's icon,
       // is no longer in the page; that's still a tap inside, not outside)
-      if(!document.contains(e.target)) return;
+      if(!document.contains(e.target) || ringEl.contains(e.target)) return;
       if(!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) closePanel();
     });
     document.addEventListener("keydown", function(e){
-      if(e.key === "Escape" && !panel.hidden) closePanel();
+      if(e.key === "Escape" && !panel.hidden && ringEl.hidden) closePanel();
     });
+
+    // progress, the sleep timer's countdown and the alarm, twice a second
+    var ticks = 0;
+    setInterval(function(){
+      ticks++;
+      if(!panel.hidden) $("npProg").style.width = (pl.cur ? pl.cur.progress() * 100 : 0) + "%";
+      if(sleep.until){
+        if(Date.now() >= sleep.until) sleepFire();
+        else if(!panel.hidden) renderSleep();
+      }
+      tickRing();
+      if(ticks % 10 === 0) checkAlarms();
+      if(ticks % 60 === 0 && !panel.hidden && tab === "alarm" && !editing) renderAlarms();
+    }, 500);
+    document.addEventListener("visibilitychange", function(){ if(!document.hidden) checkAlarms(); });
+
+    render();
+    keepAliveForAlarms();
+    checkAlarms();
   }
 
   buildClocks();

@@ -18,7 +18,8 @@ It runs in any browser as your new tab page, and as an iPhone/iPad app that keep
 - **Photo menu** (sliders icon, bottom left): the photo's title and credit, a heart to save it, *Skip to next photo* with a preview of what's next, and your favorites to pick from
 - **Quote** in a glass card at the bottom right, with *next quote*; fold it down to a small pill
 - **Search** (press `/`) and an optional critter
-- **Sounds** (headphones icon): opens full screen. Layer nature sounds and spa music, each with its own volume slider plus one for everything. Turn on **Playlist** to play spa music tracks one after another in the order you tap them
+- **Sounds** (headphones icon): opens full screen. Layer nature sounds, each with its own level, and tap spa music tracks to build **Up next**, which plays them one after another (shuffle, repeat, crossfade, reorder). Save what is playing as a **mix**, and set a **sleep timer** that fades everything out
+- **Alarm** (Alarm tab in Sounds): wakes you at a set time and days with a saved mix, the volume rising gently, with snooze. It rings from the page, so leave the page (or the app) open
 
 ![Sound mixer](https://github.com/user-attachments/assets/7a451a1b-518a-45a1-a5a8-3faa234ffc2f)
 
@@ -27,7 +28,11 @@ It runs in any browser as your new tab page, and as an iPhone/iPad app that keep
 
 ### Music not included
 
-Two music tiles, **Lake Marie** ("Lake Marie I" by Ian Aisling) and **Porch light** ("Leave the Porch Light On" by Cory Alstad), are from [Uppbeat](https://uppbeat.io/) and aren't in this repo, so they stay silent until you add your own. To use them or add other music, download tracks from [uppbeat.io](https://uppbeat.io/) and save them as `sounds/lakemarie.m4a` and `sounds/porchlight.m4a` (or add new tiles in `index.html`).
+One music tile, **Porch light** ("Leave the Porch Light On" by Cory Alstad), is from [Uppbeat](https://uppbeat.io/) and isn't in this repo, so it stays silent until you add your own copy as `sounds/porchlight.m4a`. To add other music, see *Your own sounds* below.
+
+### Your own sounds
+
+Put audio files in `sounds/custom/` and run `node custom-sounds.js`. Each one gets a tile: Uppbeat downloads (`...-main-version-...`) as spa music under **My music**, anything else as a nature sound. Names come from the file tags; to change a name, icon or group, edit `sounds/custom/custom-sounds.js` (running the script again keeps your edits). The whole `sounds/custom/` folder is in `.gitignore`, so licensed files never go into the repo. `npm run ios` copies them onto the device.
 
 ## Running it
 
@@ -63,3 +68,4 @@ In the app, favorites, hidden photos and settings are kept on that device.
 | `prefs-to-js.js` | Copies `prefs.json` into `prefs.js` by hand, after editing `prefs.json` yourself: `node prefs-to-js.js` |
 | `build-app.js`, `capacitor.config.json`, `ios/` | The iPhone/iPad app: `npm run ios` builds and opens it in Xcode |
 | `sounds/` | Nature sound loops; credits in `sounds/CREDITS.txt` |
+| `custom-sounds.js` | Lists your own sounds in `sounds/custom/` (not in git) for the page |
