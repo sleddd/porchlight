@@ -20,11 +20,10 @@ It runs in any browser as your new tab page, and as an iPhone/iPad app that keep
 - **Search** (press `/`) and an optional critter
 - **Sounds** (headphones icon): opens full screen. Layer nature sounds, each with its own level, and tap spa music tracks to build **Up next**, which plays them one after another (shuffle, repeat, crossfade, reorder). Save what is playing as a **mix**, and set a **sleep timer** that fades everything out
 - **Alarm** (Alarm tab in Sounds): wakes you at a set time and days with a saved mix, the volume rising gently, with snooze. It rings from the page, so leave the page (or the app) open
-
-![Sound mixer](https://github.com/user-attachments/assets/7a451a1b-518a-45a1-a5a8-3faa234ffc2f)
-
-![Photo menu](screenshots/photo-menu.jpg)
-
+- 
+<img width="1347" height="707" alt="Screenshot 2026-11-20 at 10 53 08 PM" src="https://github.com/user-attachments/assets/0e4c379b-a871-4fa9-a63a-1ce870d4b6b4" />
+<img width="1345" height="709" alt="Screenshot 2026-11-20 at 10 53 30 PM" src="https://github.com/user-attachments/assets/be4216f3-c3b9-4eb2-88cd-ff242a0c1e37" />
+<img width="1331" height="708" alt="Screenshot 2026-11-20 at 10 53 59 PM" src="https://github.com/user-attachments/assets/d5097eca-a7e6-4247-bd66-893bee963ca3" />
 
 ### Music not included
 
